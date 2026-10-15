@@ -1,0 +1,62 @@
+name: Atualizar painel
+
+on:
+  schedule:
+    - cron: "0 9 * * *"        # todo dia 06:00 (Brasília) = 09:00 UTC
+  workflow_dispatch:           # botão "Run workflow" para atualizar na hora
+  push:
+    branches: [main]           # republica quando o código muda
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atualizar-painel
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write           # só para o passo "Manter o agendamento ativo"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Gerar o painel a partir da planilha
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          PAINEL_SENHA: ${{ secrets.PAINEL_SENHA }}
+        run: python gerar.py
+      # Se o passo acima falhar, nada abaixo roda e o painel anterior continua no ar.
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+          retention-days: 1
+      # Em repositório público, o GitHub pausa agendamentos após 60 dias sem commits.
+      # Reativar o workflow pela API evita essa pausa.
+      - name: Manter o agendamento ativo
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/atualizar.yml/enable"
+
+  publicar:
+    needs: gerar
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

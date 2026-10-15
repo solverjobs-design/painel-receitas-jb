@@ -1,0 +1,39 @@
+{
+  "planilha": "10QeyXzFjAEksJQKzFbsGkDVJc0aEqM6rkKyOhJxOdXA",
+  "aba": "Lançamento de Receitas",
+  "intervalo": "A1:K",
+  "titulo": "Receitas JB",
+  "inicio": "2025-01",
+  "linhas_minimas": 500,
+  "colunas": {
+    "mes": "Coluna 1",
+    "empresa": "Empresa",
+    "cliente": "Cliente",
+    "pagamento": "Data Pagamento",
+    "inicio": "Data Início",
+    "tratamento": "Tratamento",
+    "duracao": "Duração (Dias)",
+    "fim": "Data fim",
+    "valor": "Valor",
+    "forma": "Forma Pagamento"
+  },
+  "grupos": [
+    {"tipo": "Neuro", "comeca_com": ["at neuro", "neuro", "consulta neuro"]},
+    {"tipo": "TF", "comeca_com": ["tf"]},
+    {"tipo": "Pilates", "comeca_com": ["pilates"]},
+    {"tipo": "Palmilha", "comeca_com": ["palmilha", "avaliacao de palmilha", "calcanheira"]},
+    {"tipo": "Avaliações", "comeca_com": ["avaliacao", "aaliacao"]},
+    {"tipo": "Produtos", "comeca_com": ["camisa", "bone", "rolo lombar", "ortese", "orthus", "barra whey", "bandage", "bola"]},
+    {"tipo": "Outros", "comeca_com": ["conversa", "medico", "curso", "personal", "danca", "lca", "liberacao miofascial", "nao identificado"]},
+    {"tipo": "Atendimento", "comeca_com": ["atendimento"]},
+    {"tipo": "Consulta", "comeca_com": ["consulta"]},
+    {"tipo": "FC", "comeca_com": ["fc"]},
+    {"tipo": "Nutricionista", "comeca_com": ["nutri"]},
+    {"tipo": "RTS", "comeca_com": ["rts"]},
+    {"tipo": "Escoliose", "comeca_com": ["escoliose"]},
+    {"tipo": "Recovery", "comeca_com": ["recovery"]},
+    {"tipo": "Quiropraxia", "comeca_com": ["quiro"]},
+    {"tipo": "Jiu-Jitsu", "comeca_com": ["jiu"]}
+  ],
+  "matriz_excluir": ["Produtos", "Avaliações", "Outros", "Jiu-Jitsu"]
+}

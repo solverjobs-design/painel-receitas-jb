@@ -1,0 +1,13 @@
+# painel gerado (só vai para o GitHub Pages, criptografado)
+site/
+# dados e credenciais nunca entram no repositório
+*.xlsx
+*.xls
+*.csv
+*.json
+!config.json
+.env
+# ferramentas locais
+.claude/
+__pycache__/
+.venv/
