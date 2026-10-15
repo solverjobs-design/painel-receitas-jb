@@ -2,7 +2,8 @@
 
 Painel online com as receitas da aba **Lançamento de Receitas** da planilha do cliente. Ele se atualiza sozinho **todo dia às 6h (horário de Brasília)**, sem depender de nenhum computador ligado.
 
-- **Link do painel:** __LINK__
+- **Link do painel:** https://solverjobs-design.github.io/painel-receitas-jb/
+- **Repositório:** https://github.com/solverjobs-design/painel-receitas-jb
 - **Acesso:** o link pede uma senha. Solver e cliente usam a mesma. Marcando "Lembrar neste aparelho", a senha não é pedida de novo naquele navegador. O botão **Sair** apaga a senha guardada.
 
 ## O que o cliente precisa fazer
