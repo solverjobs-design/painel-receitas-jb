@@ -4,114 +4,168 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Oswald:wght@400;500;600&display=swap">
 <title>__TITULO__</title>
 <style>
 :root{
   color-scheme: light;
-  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
-  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --wash:rgba(42,120,214,.07);
+  --page:#f3f3f1; --surface:#ffffff; --ink:#141414; --ink-2:#4f4e4a; --muted:#85837c;
+  --grid:#e7e6e1; --axis:#c8c6be; --border:rgba(20,20,20,.09); --wash:rgba(20,20,20,.05);
+  --brand:#e8302f; --brand-ink:#c4211f; --carbon:#181818; --carbon-2:#232328; --on-carbon:#f5f5f3; --on-carbon-2:#b5b3ac;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s-other:#b9b7af;
   --pos:#2a78d6; --neg:#e34948; --up:#006300; --down:#c0302f;
   --nv:#86b6ef; --rc:#256abf; --spark:#a9a79f;
   --heat:42,120,214; --heatneg:227,73,72;
-  --chip:#f0efec;
+  --chip:#efeeeb; --seg-on:#181818; --seg-on-ink:#ffffff;
+  --e1:#34343a; --e2:#e8302f; --e3:#aaa69c; --ly:#a3a099;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.04);
+  --f-head:"Oswald","Arial Narrow",sans-serif;
+  --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
-    --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
-    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(57,135,229,.12);
+    --page:#0e0e0f; --surface:#1a1a1d; --ink:#ffffff; --ink-2:#c6c4bd; --muted:#8b8983;
+    --grid:#2b2b2e; --axis:#3a3a3d; --border:rgba(255,255,255,.09); --wash:rgba(255,255,255,.07);
+    --brand:#ef4442; --brand-ink:#ff6b69;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s-other:#5d5c57;
     --pos:#3987e5; --neg:#e66767; --up:#0ca30c; --down:#e66767;
     --nv:#184f95; --rc:#5598e7; --spark:#6b6a64;
     --heat:57,135,229; --heatneg:230,103,103;
-    --chip:#262624;
+    --chip:#26262a; --seg-on:#f0efec; --seg-on-ink:#111111;
+    --e1:#d8d6cf; --e2:#ef4442; --e3:#6f6d67; --ly:#77756f;
+    --shadow:none;
   }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(57,135,229,.12);
+  --page:#0e0e0f; --surface:#1a1a1d; --ink:#ffffff; --ink-2:#c6c4bd; --muted:#8b8983;
+  --grid:#2b2b2e; --axis:#3a3a3d; --border:rgba(255,255,255,.09); --wash:rgba(255,255,255,.07);
+  --brand:#ef4442; --brand-ink:#ff6b69;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s-other:#5d5c57;
   --pos:#3987e5; --neg:#e66767; --up:#0ca30c; --down:#e66767;
   --nv:#184f95; --rc:#5598e7; --spark:#6b6a64;
   --heat:57,135,229; --heatneg:230,103,103;
-  --chip:#262624;
+  --chip:#26262a; --seg-on:#f0efec; --seg-on-ink:#111111;
+  --e1:#d8d6cf; --e2:#ef4442; --e3:#6f6d67; --ly:#77756f;
+  --shadow:none;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--page);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px}
-header h1{font-size:24px;line-height:1.25;margin:0 0 4px;font-weight:650;letter-spacing:-.01em}
-header p{margin:0;color:var(--ink-2)}
-.filters{position:sticky;top:0;z-index:20;background:var(--page);display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:14px 0;margin:16px 0 8px;border-bottom:1px solid var(--grid)}
+html{scroll-behavior:smooth}
+body{background:var(--page);color:var(--ink);font:14px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 64px}
+
+/* ---------- cabeçalho da marca ---------- */
+.top{background:var(--carbon);color:var(--on-carbon);border-bottom:3px solid var(--brand)}
+.top .in{max-width:1180px;margin:0 auto;padding:20px 16px 14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.top .logo{height:60px;width:auto;display:block}
+.top .tt{flex:1;min-width:240px;border-left:1px solid rgba(255,255,255,.14);padding-left:20px}
+.top .eyebrow{font:500 11px/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--brand)}
+.top h1{font:500 28px/1.1 var(--f-head);text-transform:uppercase;letter-spacing:.02em;margin:6px 0 6px;color:#fff}
+.top p{margin:0;color:var(--on-carbon-2);font-size:13px}
+.top p b{color:#fff;font-weight:700}
+.top .muted{color:var(--on-carbon-2)}
+.top .meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12px;color:var(--on-carbon-2)}
+.top .live{display:inline-flex;align-items:center;gap:7px}
+.top .live::before{content:"";width:7px;height:7px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 3px rgba(47,191,113,.18)}
+.btn-ghost{font:600 12px var(--f-body);color:#fff;background:transparent;border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:5px 14px;cursor:pointer}
+.btn-ghost:hover{border-color:#fff}
+.nav{max-width:1180px;margin:0 auto;padding:0 8px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.nav a{font:500 12px/1 var(--f-head);letter-spacing:.09em;text-transform:uppercase;color:var(--on-carbon-2);text-decoration:none;padding:10px 10px 12px;border-bottom:2px solid transparent;white-space:nowrap}
+.nav a:hover,.nav a:focus{color:#fff;border-bottom-color:var(--brand);outline:none}
+
+/* ---------- filtros ---------- */
+.filters{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page) 92%,transparent);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;padding:12px 0;margin:0 0 4px;border-bottom:1px solid var(--grid)}
 .fgroup{display:flex;align-items:center;gap:8px}
-.fgroup>span{color:var(--muted);font-size:12px}
-.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:2px}
-.seg button{border:0;background:transparent;color:var(--ink-2);font:inherit;font-size:13px;padding:5px 10px;border-radius:6px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 0 0 1px var(--border)}
-select{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 8px}
-section{margin-top:36px}
-h2{font-size:18px;margin:0 0 2px;font-weight:650}
-.sub{color:var(--ink-2);margin:0 0 14px;max-width:820px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.card h3{font-size:14px;margin:0;font-weight:600}
-.card .cap{color:var(--muted);font-size:12px;margin:2px 0 10px}
+.fgroup>span{color:var(--muted);font:500 11px var(--f-head);letter-spacing:.1em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink-2);font:600 13px var(--f-body);padding:5px 11px;border-radius:6px;cursor:pointer}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--seg-on);color:var(--seg-on-ink)}
+select{font:600 13px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px}
+
+/* ---------- seções e cartões ---------- */
+section{margin-top:40px;scroll-margin-top:64px}
+section.first{margin-top:22px}
+h2{font:500 20px/1.2 var(--f-head);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px;padding-left:12px;border-left:4px solid var(--brand)}
+.sub{color:var(--ink-2);margin:0 0 14px;max-width:860px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h3{font:700 14px/1.3 var(--f-body);margin:0}
+.card .cap{color:var(--muted);font-size:12px;margin:3px 0 10px}
 .grid{display:grid;gap:12px}
+.grid>*,.card{min-width:0}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .tiles{display:grid;gap:12px;grid-template-columns:1.5fr repeat(4,minmax(0,1fr))}
 .tiles.t5{grid-template-columns:repeat(5,minmax(0,1fr))}
 .tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .tiles.t6{grid-template-columns:repeat(3,minmax(0,1fr))}
-.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:0}
-.tile .lb{color:var(--ink-2);font-size:12px}
-.tile .v{font-size:24px;font-weight:600;line-height:1.2;margin-top:4px}
-.tile.hero .v{font-size:40px;letter-spacing:-.02em}
+.tiles.t6x{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;min-width:0;box-shadow:var(--shadow);position:relative}
+.tile .lb{color:var(--ink-2);font:500 11px/1.3 var(--f-head);letter-spacing:.08em;text-transform:uppercase}
+.tile .v{font:500 28px/1.15 var(--f-head);margin-top:6px;letter-spacing:.01em}
 .tile .d{font-size:12px;margin-top:4px;color:var(--ink-2)}
+.tile .v .u{font:600 13px var(--f-body);color:var(--muted);margin-left:4px}
+.tile.hero{background:var(--carbon);border-color:var(--carbon);color:#fff}
+.tile.hero .lb{color:var(--on-carbon-2)}
+.tile.hero .v{font-size:46px;letter-spacing:0}
+.tile.hero .d{color:var(--on-carbon-2)}
+.tile.hero .up{color:#5fd35f} .tile.hero .down{color:#ff7a78} .tile.hero .muted{color:var(--on-carbon-2)}
+.tile.acc::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--brand)}
 .up{color:var(--up)} .down{color:var(--down)}
-.warn{display:none;margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--chip);color:var(--ink-2);font-size:12px}
+.warn{display:none;margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--chip);color:var(--ink-2);font-size:12px;border-left:3px solid var(--brand)}
 .chart{position:relative;width:100%}
 .chart svg{display:block;width:100%;overflow:visible}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2);margin:0 0 8px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .legend i.ln{height:2px;width:14px;border-radius:1px;vertical-align:3px}
-.tick{font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
-.tick.sel{fill:var(--ink);font-weight:600}
-.lbl{font-size:11px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
-.lbl.strong{fill:var(--ink);font-weight:600}
+.legend i.dash{height:0;width:14px;border-top:2px dashed var(--muted);border-radius:0;vertical-align:3px;background:none}
+.tick{font:11px var(--f-body);fill:var(--muted);font-variant-numeric:tabular-nums}
+.tick.sel{fill:var(--ink);font-weight:700}
+.lbl{font:11px var(--f-body);fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.lbl.strong{fill:var(--ink);font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
 .hit{fill:transparent;cursor:pointer;outline:none}
 .hit:hover,.hit:focus{fill:var(--wash)}
-#tt{position:fixed;pointer-events:none;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 18px rgba(0,0,0,.12);display:none;min-width:150px;max-width:280px}
-#tt .h{color:var(--ink-2);margin-bottom:4px}
+#tt{position:fixed;pointer-events:none;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 22px rgba(0,0,0,.16);display:none;min-width:150px;max-width:280px}
+#tt .h{color:var(--ink-2);margin-bottom:4px;font-weight:700}
 #tt .r{display:flex;align-items:center;gap:8px;justify-content:space-between}
 #tt .r span:first-child{display:flex;align-items:center;gap:6px;color:var(--ink-2)}
 #tt .r b{font-variant-numeric:tabular-nums;color:var(--ink)}
 #tt .k{display:inline-block;width:12px;height:2px;border-radius:1px}
 #tt .tot{border-top:1px solid var(--grid);margin-top:4px;padding-top:4px}
 table{border-collapse:collapse;width:100%;font-size:13px}
-th{font-weight:600;color:var(--ink-2);font-size:12px;text-align:right;padding:6px 8px;border-bottom:1px solid var(--axis);white-space:nowrap}
-td{padding:6px 8px;border-bottom:1px solid var(--grid);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th{font:500 11px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:right;padding:7px 8px;border-bottom:1px solid var(--axis);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--grid);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover td{background:var(--wash)}
 th:first-child,td:first-child{text-align:left}
+td.l,th.l{text-align:left}
 td .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
+td .pb{display:inline-block;height:8px;border-radius:0 4px 4px 0;background:var(--brand);vertical-align:middle;min-width:1px}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .mtx td,.mtx th{padding:5px 7px;font-size:12px}
 .mtx th:first-child,.mtx td:first-child{position:sticky;left:0;background:var(--surface);z-index:1}
-.mtx td.selc{box-shadow:inset 0 0 0 2px var(--ink-2)}
+.mtx td.selc{box-shadow:inset 0 0 0 2px var(--brand)}
 .hm td{text-align:center;min-width:44px}
 .hm th{text-align:center}
 .hm th:first-child,.hm td:first-child{text-align:left}
-.hm td.dg{font-weight:600;background:var(--chip)}
+.hm td.dg{font-weight:700;background:var(--chip)}
 details{margin-top:10px}
-summary{cursor:pointer;color:var(--ink-2);font-size:13px}
+summary{cursor:pointer;color:var(--ink-2);font-size:13px;font-weight:600}
+summary:hover{color:var(--brand-ink)}
 .ins{counter-reset:i;display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
-.ins .card{position:relative;padding-left:48px}
-.ins .card::before{counter-increment:i;content:counter(i);position:absolute;left:16px;top:16px;width:22px;height:22px;border-radius:50%;background:var(--chip);color:var(--ink-2);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.ins .card{position:relative;padding-left:50px}
+.ins .card::before{counter-increment:i;content:counter(i);position:absolute;left:16px;top:16px;width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font:600 12px var(--f-head);display:flex;align-items:center;justify-content:center}
 .ins p{margin:6px 0 0;color:var(--ink-2)}
-.opp .num{font-size:28px;font-weight:600;line-height:1.1;margin-top:6px}
+.ins b{color:var(--ink)}
+.opp .num{font:500 32px/1.1 var(--f-head);margin-top:8px}
 .opp .val{color:var(--ink-2);font-size:13px}
 .opp p{color:var(--ink-2);margin:8px 0 0;font-size:13px}
-.btn{font:inherit;font-size:12px;border:1px solid var(--border);background:var(--chip);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer;margin-top:8px}
+.btn{font:600 12px var(--f-body);border:1px solid var(--border);background:var(--chip);color:var(--ink);border-radius:6px;padding:5px 12px;cursor:pointer;margin-top:10px}
+.btn:hover{border-color:var(--brand)}
 .list{max-height:320px;overflow:auto;margin-top:8px}
 .list td,.list th{font-size:12px;padding:4px 6px}
 .bars .row{display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;margin:6px 0;font-size:13px}
@@ -119,39 +173,47 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
 .bars .fill{height:100%;background:var(--s1);border-radius:0 4px 4px 0}
 .bars .row .n{text-align:right;font-variant-numeric:tabular-nums}
 .notes{color:var(--ink-2);font-size:13px}
-.notes li{margin:4px 0}
+.notes li{margin:5px 0}
 .muted{color:var(--muted)}
-[hidden]{display:none!important}
-.upd{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:6px!important;font-size:12px;color:var(--muted)!important}
-.upd .btn{margin:0}
-.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-.login form{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
-.login h1{font-size:20px;margin:0 0 4px;font-weight:650}
-.login p{margin:0 0 16px;color:var(--ink-2)}
-.login label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:4px}
-.login input[type=password]{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--page);border:1px solid var(--axis);border-radius:8px;padding:9px 10px}
-.login input[type=password]:focus{outline:2px solid var(--s1);outline-offset:1px}
-.login .chk{display:flex;align-items:center;gap:8px;margin:12px 0 16px;font-size:13px;color:var(--ink-2)}
-.login button{width:100%;font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px;background:var(--s1);color:#fff;cursor:pointer}
+.foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--grid);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* ---------- tela de senha (sempre no tema da marca) ---------- */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 25% 15%,#2a2a30 0,#151515 55%,#0f0f0f 100%);color:#fff}
+.login form{width:100%;max-width:380px;background:#1d1d21;border:1px solid rgba(255,255,255,.08);border-top:3px solid #e8302f;border-radius:12px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.login .logo{display:block;height:84px;width:auto;margin:0 auto 14px}
+.login h1{font:500 22px/1.2 var(--f-head);text-transform:uppercase;letter-spacing:.04em;margin:0 0 4px;text-align:center;color:#fff}
+.login p{margin:0 0 20px;color:#b5b3ac;text-align:center;font-size:13px}
+.login label{display:block;font:500 11px var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:#b5b3ac;margin-bottom:6px}
+.login input[type=password]{width:100%;font:16px var(--f-body);color:#fff;background:#121214;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:10px 12px}
+.login input[type=password]:focus{outline:2px solid #e8302f;outline-offset:1px;border-color:transparent}
+.login .chk{display:flex;align-items:center;gap:8px;margin:14px 0 18px;font:13px var(--f-body);letter-spacing:0;text-transform:none;color:#b5b3ac}
+.login button{width:100%;font:500 15px var(--f-head);letter-spacing:.12em;text-transform:uppercase;border:0;border-radius:8px;padding:11px;background:#e8302f;color:#fff;cursor:pointer}
+.login button:hover{background:#d62523}
 .login button:disabled{opacity:.6;cursor:progress}
-.login .err{color:var(--down);font-size:13px;min-height:20px;margin:10px 0 0}
+.login .err{color:#ff7a78;font-size:13px;min-height:20px;margin:12px 0 0;text-align:center}
+
 @media (max-width:900px){
-  .tiles,.tiles.t5,.tiles.t4,.tiles.t6{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tiles,.tiles.t5,.tiles.t4,.tiles.t6,.tiles.t6x{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tile.hero{grid-column:1/-1}
   .g2,.g3,.ins{grid-template-columns:1fr}
+  .top .meta{align-items:flex-start}
 }
 @media (max-width:520px){
-  .tile.hero .v{font-size:32px}
+  .tile.hero .v{font-size:34px}
+  .tile .v{font-size:24px}
   .bars .row{grid-template-columns:110px 1fr 56px}
   .filters{position:static}
+  .top .tt{border-left:0;padding-left:0}
+  .top h1{font-size:23px}
 }
 </style>
 </head>
 <body>
 <div class="login" id="login" hidden>
   <form id="fLogin" autocomplete="on">
+    <img class="logo" src="__LOGO__" alt="" onerror="this.remove()">
     <h1>__TITULO__</h1>
-    <p id="lgMsg">Digite a senha para abrir o painel.</p>
+    <p id="lgMsg">Painel de gestão. Digite a senha para abrir.</p>
     <input type="text" name="username" value="painel" autocomplete="username" hidden>
     <label for="senha">Senha</label>
     <input type="password" id="senha" name="password" autocomplete="current-password" required>
@@ -160,12 +222,26 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
     <div class="err" id="lgErr" role="alert"></div>
   </form>
 </div>
-<div class="wrap" id="app" hidden>
-<header>
-  <h1>__TITULO__: demonstrativo mensal</h1>
-  <p id="hSub"></p>
-  <p class="upd"><span id="hUpd"></span><button class="btn" id="bSair" type="button">Sair</button></p>
+<div id="app" hidden>
+<header class="top">
+  <div class="in">
+    <img class="logo" src="__LOGO__" alt="" onerror="this.remove()">
+    <div class="tt">
+      <div class="eyebrow">Painel de gestão · Receitas</div>
+      <h1>__TITULO__</h1>
+      <p id="hSub"></p>
+    </div>
+    <div class="meta">
+      <span class="live" id="hUpd"></span>
+      <button class="btn-ghost" id="bSair" type="button">Sair</button>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Seções">
+    <a href="#sResumo">Resumo</a><a href="#sMes">Mês</a><a href="#sTipos">Por tipo</a><a href="#sReceb">Recebimento</a>
+    <a href="#sRet">Retenção</a><a href="#sCross">Venda cruzada</a><a href="#sIns">Tendências</a><a href="#sOpp">Oportunidades</a><a href="#sNotas">Critérios</a>
+  </nav>
 </header>
+<div class="wrap">
 
 <div class="filters" role="group" aria-label="Filtros">
   <div class="fgroup"><span>Empresa</span><div class="seg" id="fEmp"></div></div>
@@ -175,16 +251,39 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
     <button data-v="ano" aria-pressed="false">Mesmo mês do ano anterior</button></div></div>
 </div>
 
+<!-- RESUMO EXECUTIVO -->
+<section id="sResumo" class="first">
+  <h2>Resumo executivo</h2>
+  <p class="sub" id="subResumo"></p>
+  <div class="tiles t6x" id="tilesResumo"></div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card">
+      <h3 id="hAcum">Receita acumulada no ano</h3>
+      <div class="cap" id="capAcum"></div>
+      <div class="legend" id="lgAcum"></div>
+      <div class="chart" id="cAcum"></div>
+    </div>
+    <div class="card">
+      <h3>Receita por empresa, mês a mês</h3>
+      <div class="cap">Visão do grupo, que não muda com o filtro de empresa. Clique em uma coluna para selecionar o mês.</div>
+      <div class="legend" id="lgEmpM"></div>
+      <div class="chart" id="cEmpM"></div>
+    </div>
+  </div>
+</section>
+
 <!-- VISÃO DO MÊS -->
-<section id="sMes" style="margin-top:20px">
+<section id="sMes">
+  <h2 id="hMes">Mês selecionado</h2>
+  <p class="sub">Muda com os filtros de empresa, mês e comparação acima.</p>
   <div class="tiles" id="tiles"></div>
   <div class="warn" id="warnMes"></div>
 </section>
 
 <!-- RECEITA POR TIPO -->
-<section>
+<section id="sTipos">
   <h2>Receita por tipo, mês a mês</h2>
-  <p class="sub">Clique em uma coluna para selecionar o mês. As cinco maiores linhas aparecem separadas e as demais ficam somadas em “Demais tipos”.</p>
+  <p class="sub">Clique em uma coluna para selecionar o mês. As cinco maiores linhas aparecem separadas e as demais ficam somadas em “Demais tipos”. No mês em andamento, o contorno tracejado mostra a projeção de fechamento.</p>
   <div class="card">
     <div class="legend" id="lgStack"></div>
     <div class="chart" id="cStack"></div>
@@ -216,8 +315,32 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
   </details>
 </section>
 
+<!-- RECEBIMENTO E CONCENTRAÇÃO -->
+<section id="sReceb">
+  <h2>Recebimento e concentração</h2>
+  <p class="sub">Como a receita é paga, quanto tempo leva para o dinheiro entrar e quanto ela depende dos maiores clientes. Obedece ao filtro de empresa.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3 id="hPag">Receita por forma de pagamento</h3>
+      <div class="cap" id="capPag"></div>
+      <div class="scroll"><table id="tPag"></table></div>
+    </div>
+    <div class="card">
+      <h3>Prazo médio estimado de recebimento</h3>
+      <div class="cap">Em dias, ponderado pelo valor. Pix e dinheiro entram na hora, débito em 1 dia, e crédito em N vezes leva em média 30 × (N+1) ÷ 2 dias, supondo que as parcelas não são antecipadas.</div>
+      <div class="chart" id="cPrazo"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <h3>Maiores clientes nos últimos 12 meses</h3>
+    <div class="cap" id="capTop"></div>
+    <div class="scroll"><table id="tTop"></table></div>
+    <button class="btn" id="bTopCsv" type="button">Baixar CSV</button>
+  </div>
+</section>
+
 <!-- RECOMPRA -->
-<section>
+<section id="sRet">
   <h2>Recompra e retenção</h2>
   <p class="sub">Uma compra é um cliente pagando em uma data. Vários lançamentos do mesmo cliente no mesmo dia contam como uma compra só. Os nomes foram padronizados, sem acento, maiúscula ou espaço, para reunir o mesmo cliente.</p>
   <div class="tiles t6" id="tilesRec"></div>
@@ -235,15 +358,22 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
       <div class="chart" id="cRenov"></div>
     </div>
   </div>
-  <div class="card" style="margin-top:12px">
-    <h3>Carteira ativa de planos TF e Pilates</h3>
-    <div class="cap" id="capCart"></div>
-    <div class="chart" id="cCart"></div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card">
+      <h3>Carteira ativa de planos TF e Pilates</h3>
+      <div class="cap" id="capCart"></div>
+      <div class="chart" id="cCart"></div>
+    </div>
+    <div class="card">
+      <h3>Receita mensal contratada em planos</h3>
+      <div class="cap">Soma, no dia 15 de cada mês, do valor de cada plano TF ou Pilates vigente dividido pela sua duração em meses (no mês em andamento, na data do último lançamento, antes das renovações do mês). É a receita que já está garantida antes de o mês começar.</div>
+      <div class="chart" id="cMrr"></div>
+    </div>
   </div>
 </section>
 
 <!-- CROSS-SELL -->
-<section>
+<section id="sCross">
   <h2>Clientes que compraram mais de um produto</h2>
   <p class="sub" id="subX"></p>
   <div class="tiles t4" id="tilesX"></div>
@@ -275,18 +405,20 @@ summary{cursor:pointer;color:var(--ink-2);font-size:13px}
 </section>
 
 <!-- OPORTUNIDADES -->
-<section>
+<section id="sOpp">
   <h2>Oportunidades</h2>
-  <p class="sub">As listas obedecem ao filtro de empresa e podem ser baixadas em CSV. O “valor de referência” é a soma do último pacote de cada cliente, não uma previsão de receita.</p>
+  <p class="sub">As listas obedecem ao filtro de empresa e podem ser baixadas em CSV. O “valor de referência” é a soma do último pacote de cada cliente (na lista “Reconquistar”, o gasto dos últimos 12 meses), e não uma previsão de receita.</p>
   <div class="grid g3 opp" id="opp"></div>
   <div class="ins" id="insOpp" style="margin-top:12px"></div>
 </section>
 
 <!-- NOTAS -->
-<section>
+<section id="sNotas">
   <h2>Critérios e qualidade dos dados</h2>
   <div class="card notes"><ul id="notes"></ul></div>
 </section>
+<div class="foot"><span>__TITULO__ · painel de gestão</span><span id="fUpd"></span></div>
+</div>
 </div>
 <div id="tt" role="tooltip"></div>
 
@@ -385,7 +517,7 @@ function hbarPath(x,y,w,h,r,dir){ // dir 1: arredonda à direita; -1: à esquerd
   return `M${x+w},${y}H${x+r}Q${x},${y} ${x},${y+r}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w}Z`;
 }
 function svgIn(el,h){ el.innerHTML=''; const w=el.clientWidth||600; const s=S('svg',{viewBox:`0 0 ${w} ${h}`,height:h,role:'img'},el); return {s,w,h}; }
-function labelStep(n,w){ const per=w/n; return per>=46?1:per>=30?2:3; }
+function labelStep(n,w){ const per=w/n; return Math.max(1,Math.ceil(46/per)); }   // ~46px por rótulo de mês
 
 /* ---------- tooltip ---------- */
 const TT=document.getElementById('tt');
@@ -458,7 +590,8 @@ function renderStack(){
   ser.forEach(s=>{ const sp=document.createElement('span'); const i=document.createElement('i'); i.style.background=s.c; sp.append(i,document.createTextNode(s.n)); lg.appendChild(sp); });
   const el=document.getElementById('cStack'); const H=300; const {s,w}=svgIn(el,H);
   const m={l:52,r:8,t:22,b:26}, pw=w-m.l-m.r, ph=H-m.t-m.b, n=M.length;
-  const tot=M.map((_,i)=>sum(ser.map(x=>x.v[i]))); const ymax=niceMax(Math.max(...tot)*1.05);
+  const tot=M.map((_,i)=>sum(ser.map(x=>x.v[i]))); const pj=projecao(b);
+  const ymax=niceMax(Math.max(...tot,pj?pj.v:0)*1.05);
   const y=v=>m.t+ph-(v/ymax)*ph, band=pw/n, bw=Math.min(24,band*0.62);
   // seleção
   S('rect',{x:m.l+st.i*band,y:m.t-18,width:band,height:ph+18,rx:6,style:'fill:var(--wash)'},s);
@@ -471,10 +604,14 @@ function renderStack(){
       let h=y0-y1-2; if(h<0.5) h=0.5;
       if(z.n===lastName) S('path',{d:barPath(x,y1,bw,h,4),style:`fill:${z.c}`},s);
       else S('rect',{x,y:y1,width:bw,height:h,style:`fill:${z.c}`},s); });
+    const comPj=pj&&isP(i)&&pj.v>tot[i];
+    if(comPj) S('rect',{x:x+0.75,y:y(pj.v),width:bw-1.5,height:Math.max(0,y(tot[i])-y(pj.v)-2),rx:3,style:'fill:none;stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:3 3'},s);
     if(i%step===0||i===st.i) txt(s,m.l+i*band+band/2,H-8,ml(M[i]),i===st.i?'tick sel':'tick');
-    if(i===st.i) txt(s,m.l+i*band+band/2,y(tot[i])-6,brlK(tot[i]),'lbl strong');
+    if(i===st.i){ const lx=m.l+i*band+band/2, last=i>n-3;
+      if(comPj) txt(s,last?x+bw:lx,y(pj.v)-6,`proj. ${brlK(pj.v)}`,'lbl strong',last?'end':'middle');
+      else txt(s,lx,y(tot[i])-6,brlK(tot[i]),'lbl strong'); }
     const hit=S('rect',{x:m.l+i*band,y:m.t,width:band,height:ph,class:'hit',role:'button','aria-label':`${ml(M[i])}: ${brl(tot[i])}`},s);
-    hover(hit,e=>ttShow(e,ml(M[i]),ser.slice().reverse().map(z=>({n:z.n,c:z.c,v:brl(z.v[i])})),{n:'Total',v:brl(tot[i])}));
+    hover(hit,e=>ttShow(e,ml(M[i]),ser.slice().reverse().map(z=>({n:z.n,c:z.c,v:brl(z.v[i])})),comPj?{n:`Total até dia ${PARC.dia} · projeção ${brlK(pj.v)}`,v:brl(tot[i])}:{n:'Total',v:brl(tot[i])}));
     hit.addEventListener('click',()=>selMonth(i)); hit.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selMonth(i);} });
   }
 }
@@ -661,7 +798,8 @@ function renderTextos(){
   const I=D.info, n=M.length;
   document.getElementById('hSub').innerHTML=`Aba “${esc(I.aba)}” · mês definido pela <b>data de pagamento</b> · ${ml(M[0])} a ${ml(M[n-1])} · lançamentos até ${I.ultimo}`+
     (PARC?` · <span class="muted">* mês em andamento; as comparações usam os mesmos dias do mês comparado</span>`:'');
-  document.getElementById('hUpd').textContent=`Dados atualizados em ${I.gerado} (horário de Brasília)`;
+  document.getElementById('hUpd').textContent=`Atualizado em ${I.gerado}`;
+  document.getElementById('fUpd').textContent=`Dados atualizados em ${I.gerado} (horário de Brasília) · lançamentos até ${I.ultimo}`;
   document.getElementById('capNovos').textContent=`“Novo” é quem compra pela primeira vez na base (com filtro de empresa, pela primeira vez naquela empresa). Em ${ml(M[0])} a ${ml(M[Math.min(2,n-1)])} quase todos aparecem como novos porque a planilha começa em ${I.primeira}.`;
   document.getElementById('capRenov').textContent=`Renovação: o cliente comprou o mesmo tipo de plano até 30 dias depois do vencimento, contado pelo mês de vencimento. Conversão: a consulta virou tratamento em até 30 dias. Só entram planos e consultas até ${I.corte||'—'}, para que todos tenham tido 30 dias. Meses com menos de 5 casos ficam fora do gráfico.`;
   document.getElementById('capCart').textContent=`Clientes com plano TF ou Pilates vigente no dia 15 de cada mês (pela data de início e de fim)${PARC&&PARC.dia<15?'; no mês em andamento, na data do último lançamento':''}. Nos primeiros meses da série a carteira aparece menor do que era, porque os planos comprados antes de ${I.primeira} não estão na planilha.`;
@@ -684,9 +822,9 @@ function renderOpp(){
     if(rows.length){
       const d=document.createElement('details'); const sm=document.createElement('summary'); sm.textContent='Ver lista'; d.appendChild(sm);
       const wrap=document.createElement('div'); wrap.className='list';
-      const tb=document.createElement('table'); tb.innerHTML='<thead><tr><th>Cliente</th><th>Empresa</th><th>Tipo</th><th>'+(o.k==='consSemConv'?'Consulta':'Fim')+'</th><th>Valor</th></tr></thead>';
+      const tb=document.createElement('table'); tb.innerHTML='<thead><tr><th>Cliente</th><th>Empresa</th><th>Tipo</th><th>'+esc(o.colNome)+'</th><th>Valor</th></tr></thead>';
       const body=document.createElement('tbody');
-      rows.forEach(r=>{ const tr=document.createElement('tr'); [r.c,r.e.replace('JB ',''),r.t,o.k==='consSemConv'?r.pg:r.fim,brl(r.v)].forEach(x=>{ const td=document.createElement('td'); td.textContent=x; tr.appendChild(td); }); body.appendChild(tr); });
+      rows.forEach(r=>{ const tr=document.createElement('tr'); [r.c,r.e.replace('JB ',''),r.t,r[o.col],brl(r.v)].forEach(x=>{ const td=document.createElement('td'); td.textContent=x; tr.appendChild(td); }); body.appendChild(tr); });
       tb.appendChild(body); wrap.appendChild(tb); d.appendChild(wrap);
       const bt=document.createElement('button'); bt.className='btn'; bt.textContent='Baixar CSV'; bt.addEventListener('click',()=>csv(rows,o.k+'_'+st.emp.replace(/ /g,'_'))); d.appendChild(bt);
       c.appendChild(d);
@@ -721,13 +859,124 @@ function renderNotes(){
   document.getElementById('notes').innerHTML=L.map(x=>`<li>${x}</li>`).join('');
 }
 
+/* ---------- resumo executivo ---------- */
+const totMes=(rev,k)=>sum(D.tipos.map(t=>rev[t][k]));
+const kFech=()=>M.length-(PARC?2:1);   // último mês fechado
+// projeção do mês em andamento: realizado até o dia × mediana de (mês inteiro ÷ mesmo dia) dos 6 meses anteriores
+function projecao(b){
+  if(!PARC||!b.revAte||PARC.dia<7) return null;   // na 1ª semana o ritmo ainda é instável
+  const i=PARC.i, r=[];
+  for(let k=i-1;k>=0&&r.length<6;k--){ const full=totMes(b.rev,k), ate=totMes(b.revAte,k); if(full>0&&ate>0) r.push(full/ate); }
+  if(r.length<3) return null;
+  r.sort((a,c)=>a-c); const f=r.length%2?r[(r.length-1)/2]:(r[r.length/2-1]+r[r.length/2])/2;
+  const real=totMes(b.rev,i); return {v:real*f, real, f};
+}
+function renderResumo(){
+  const b=B(), last=M.length-1, k=kFech(), pj=projecao(b), L=b.ltm, c9=b.cli90, cc=b.conc, mr=b.mrr;
+  document.getElementById('subResumo').textContent=`Situação até ${D.info.ultimo} · ${st.emp==='Todas'?'todas as empresas':st.emp}. Estes números olham para o presente e não mudam com o mês selecionado.`;
+  let h=tile('Receita dos últimos 12 meses', brlK(L.v), L.ant?delta(L.v,L.ant,'12 meses anteriores',true):'<span class="muted">a comparação aparece quando houver 2 anos de histórico</span>','hero');
+  if(pj){ const j12=PARC.i-12, ly=j12>=0?totMes(b.rev,j12):null;
+    h+=tile(`Projeção de fechamento de ${ml(M[last]).replace('*','')}`, brlK(pj.v), `realizado até dia ${PARC.dia}: ${brlK(pj.real)}`+(ly?`<br>${delta(pj.v,ly,ml(M[j12]),false)}`:''),'acc');
+  } else if(PARC){ const v=totMes(b.rev,last), j12=last-12, ly=j12>=0&&b.revAte?totMes(b.revAte,j12):null;
+    h+=tile(`${ml(M[last]).replace('*','')} até dia ${PARC.dia}`, brlK(v), (ly?`${delta(v,ly,ml(M[j12])+' até dia '+PARC.dia,false)}<br>`:'')+'<span class="muted">a projeção de fechamento aparece a partir do dia 7</span>','acc');
+  } else { const v=totMes(b.rev,last), j12=last-12, ly=j12>=0?totMes(b.rev,j12):null;
+    h+=tile(`Receita de ${ml(M[last])}`, brlK(v), ly?delta(v,ly,ml(M[j12]),true):'','acc'); }
+  h+=tile('Receita contratada em planos', `${brlK(mr[k])}<span class="u">/mês</span>`, `TF e Pilates vigentes em ${ml(M[k])}`+((k>=12&&mr[k-12])?`<br>${delta(mr[k],mr[k-12],ml(M[k-12]),false)}`:''),'acc');
+  h+=tile('Clientes ativos (90 dias)', nf(c9.ativos), c9.ativosLY?delta(c9.ativos,c9.ativosLY,'mesma janela do ano anterior',false):'com compra nos últimos 90 dias');
+  h+=tile('Sem atendimento há 90+ dias', nf(c9.risco), `clientes dos últimos 12 meses, que gastaram ${brlK(c9.riscoV)} · lista em Oportunidades`);
+  h+=tile('Peso dos 10% maiores clientes', pct(cc.top10pct,0), `${nf(cc.k10)} de ${nf(cc.n)} clientes nos últimos 12 meses · 20 maiores: ${pct(cc.top20,0)}`);
+  document.getElementById('tilesResumo').innerHTML=h;
+}
+function renderAcum(){
+  const b=B(), last=M.length-1, Y=M[last].slice(0,4), Y0=String(+Y-1), T=totals(b).v, pj=projecao(b);
+  const serie=yr=>{ if(M.indexOf(yr+'-01')<0) return null; const out=Array(12).fill(null); let acc=0;
+    for(let m=0;m<12;m++){ const i=M.indexOf(`${yr}-${String(m+1).padStart(2,'0')}`); if(i<0) break; acc+=T[i]; out[m]=acc; } return out; };
+  const cur=serie(Y), ant=serie(Y0), mi=+M[last].slice(5)-1;
+  const el=document.getElementById('cAcum'), cap=document.getElementById('capAcum'), lg=document.getElementById('lgAcum');
+  document.getElementById('hAcum').textContent=`Receita acumulada no ano: ${Y} × ${Y0}`;
+  if(!cur){ el.innerHTML=''; cap.textContent='Sem dados do ano atual.'; lg.innerHTML=''; return; }
+  const curPj=(pj&&cur[mi]!=null)?cur[mi]-pj.real+pj.v:null;
+  let antMesmo=null;
+  if(ant){ const j=M.indexOf(`${Y0}-${String(mi+1).padStart(2,'0')}`); antMesmo=(mi?ant[mi-1]:0)+(PARC&&b.revAte?totMes(b.revAte,j):T[j]); }
+  cap.innerHTML=`Até ${D.info.ultimo.slice(0,5)}: <b>${brlK(cur[mi])}</b> em ${Y}`+(antMesmo!=null?` contra ${brlK(antMesmo)} no mesmo período de ${Y0} (${dpct(antMesmo?cur[mi]/antMesmo-1:null)}).`:'.')+(curPj?` Com a projeção do mês, ${Y} chega a ${brlK(curPj)} até o fim de ${MN[mi]}.`:'');
+  lg.innerHTML=`<span><i class="ln" style="background:var(--brand)"></i>${Y}</span>`+(ant?`<span><i class="ln" style="background:var(--ly)"></i>${Y0}</span>`:'')+(curPj?`<span><i class="dash"></i>Projeção do mês</span>`:'');
+  const H=250, {s,w}=svgIn(el,H), m={l:56,r:70,t:14,b:26}, pw=w-m.l-m.r, ph=H-m.t-m.b;
+  const ymax=niceMax(Math.max(...(ant||[]).filter(v=>v!=null),...cur.filter(v=>v!=null),curPj||0)*1.05);
+  const x=k=>m.l+k*pw/11, y=v=>m.t+ph-(v/ymax)*ph;
+  for(let k=0;k<=4;k++){ const v=ymax*k/4,yy=y(v); S('line',{x1:m.l,x2:w-m.r,y1:yy,y2:yy,style:`stroke:${k?'var(--grid)':'var(--axis)'};stroke-width:1`},s); txt(s,m.l-6,yy+4,axK(v),'tick','end'); }
+  const step=Math.max(1,Math.ceil(30/(pw/11)));
+  MN.forEach((n,k)=>{ if(k%step===0||k===mi) txt(s,x(k),H-8,n,k===mi?'tick sel':'tick'); });
+  const linha=(v,c)=>{ let d='',pen=false; v.forEach((z,k)=>{ if(z==null){pen=false;return;} d+=(pen?'L':'M')+x(k)+','+y(z); pen=true; }); S('path',{d,style:`fill:none;stroke:${c};stroke-width:2;stroke-linejoin:round;stroke-linecap:round`},s); };
+  if(ant){ linha(ant,'var(--ly)'); const ka=ant.reduce((a,z,k)=>z!=null?k:a,0); txt(s,x(ka)+6,y(ant[ka])+4,`${Y0}: ${brlK(ant[ka])}`,'lbl','start'); }
+  linha(cur,'var(--brand)');
+  if(curPj){ const x0=mi?x(mi-1):x(0), y0=mi?y(cur[mi-1]):y(0); S('path',{d:`M${x0},${y0}L${x(mi)},${y(curPj)}`,style:'fill:none;stroke:var(--brand);stroke-width:2;stroke-dasharray:4 4'},s);
+    S('circle',{cx:x(mi),cy:y(curPj),r:4,style:'fill:var(--surface);stroke:var(--brand);stroke-width:2'},s); }
+  S('circle',{cx:x(mi),cy:y(cur[mi]),r:4,style:'fill:var(--brand);stroke:var(--surface);stroke-width:2'},s);
+  txt(s,x(mi)+8,y(curPj||cur[mi])-8,`${Y}: ${brlK(curPj||cur[mi])}${curPj?' (proj.)':''}`,'lbl strong','start');
+  for(let k=0;k<12;k++){ const hit=S('rect',{x:x(k)-pw/22,y:m.t,width:pw/11,height:ph,class:'hit'},s);
+    hover(hit,e=>ttShow(e,`Acumulado até ${MN[k]}`,[{n:Y,c:'var(--brand)',v:cur[k]!=null?brl(cur[k]):'—'},...(ant?[{n:Y0,c:'var(--ly)',v:ant[k]!=null?brl(ant[k]):'—'}]:[]),...(k===mi&&curPj?[{n:'Projeção',v:brl(curPj)}]:[])])); }
+}
+function renderEmpM(){
+  const E=D.emps.slice(1), cor=k=>k<3?`var(--e${k+1})`:'var(--s-other)';
+  const lg=document.getElementById('lgEmpM'); lg.innerHTML=E.map((e,k)=>`<span><i style="background:${cor(k)}"></i>${esc(e)}</span>`).join('');
+  const el=document.getElementById('cEmpM'), H=250, {s,w}=svgIn(el,H);
+  const m={l:52,r:8,t:18,b:26}, pw=w-m.l-m.r, ph=H-m.t-m.b, n=M.length, band=pw/n, bw=Math.min(22,band*0.62);
+  const tot=M.map((_,i)=>sum(E.map(e=>D.revEmp[e][i]))), ymax=niceMax(Math.max(...tot)*1.05), y=v=>m.t+ph-(v/ymax)*ph;
+  S('rect',{x:m.l+st.i*band,y:m.t-14,width:band,height:ph+14,rx:6,style:'fill:var(--wash)'},s);
+  for(let k=0;k<=4;k++){ const v=ymax*k/4,yy=y(v); S('line',{x1:m.l,x2:w-m.r,y1:yy,y2:yy,style:`stroke:${k?'var(--grid)':'var(--axis)'};stroke-width:1`},s); txt(s,m.l-8,yy+4,axK(v),'tick','end'); }
+  const step=labelStep(n,pw);
+  for(let i=0;i<n;i++){ const x=m.l+i*band+(band-bw)/2; let acc=0; const vis=E.filter(e=>D.revEmp[e][i]>0), ul=vis[vis.length-1];
+    E.forEach((e,k)=>{ const v=D.revEmp[e][i]; if(v<=0) return; const y0=y(acc),y1=y(acc+v); acc+=v; let h=y0-y1-2; if(h<0.5) h=0.5;
+      if(e===ul) S('path',{d:barPath(x,y1,bw,h,4),style:`fill:${cor(k)}`},s); else S('rect',{x,y:y1,width:bw,height:h,style:`fill:${cor(k)}`},s); });
+    if(i%step===0||i===st.i) txt(s,m.l+i*band+band/2,H-8,ml(M[i]),i===st.i?'tick sel':'tick');
+    const hit=S('rect',{x:m.l+i*band,y:m.t,width:band,height:ph,class:'hit',role:'button','aria-label':`${ml(M[i])}: ${brl(tot[i])}`},s);
+    hover(hit,e=>ttShow(e,ml(M[i]),E.slice().reverse().map(z=>({n:z,c:cor(E.indexOf(z)),v:brl(D.revEmp[z][i])+(tot[i]?` (${pct(D.revEmp[z][i]/tot[i],0)})`:'')})),{n:'Total',v:brl(tot[i])}));
+    hit.addEventListener('click',()=>selMonth(i));
+  }
+}
+
+/* ---------- recebimento e concentração ---------- */
+function csvGen(hd,rows,name){
+  const L=[hd.join(';')].concat(rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')));
+  const blob=new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function renderPag(){
+  const b=B(), i=st.i, F=D.formas, i0=Math.max(0,i-11);
+  const vm=F.map(f=>b.pag[f][i]), v12=F.map(f=>sum(b.pag[f].slice(i0,i+1))), tm=sum(vm), t12=sum(v12);
+  const pz=(a,z)=>{ const n=sum(b.prazo.num.slice(a,z+1)), d=sum(b.prazo.den.slice(a,z+1)); return d?n/d:null; };
+  const pm=pz(i,i), p12=pz(i0,i), mx=Math.max(...v12.map(v=>t12?v/t12:0))||1;
+  document.getElementById('hPag').textContent=`Receita por forma de pagamento em ${ml(M[i])}`;
+  document.getElementById('capPag').textContent=`Comparada com os 12 meses de ${ml(M[i0])} a ${ml(M[i])}. Prazo médio estimado de recebimento: ${pm!=null?nf(pm)+' dias':'—'} no mês e ${p12!=null?nf(p12)+' dias':'—'} em 12 meses.`;
+  let h=`<thead><tr><th>Forma</th><th>${esc(ml(M[i]))}</th><th>%</th><th>12 meses</th><th>%</th><th class="l">Peso em 12 meses</th></tr></thead><tbody>`;
+  F.forEach((f,k)=>{ if(!vm[k]&&!v12[k]) return; const p=t12?v12[k]/t12:0;
+    h+=`<tr><td>${esc(f)}</td><td>${vm[k]?brl(vm[k]):'—'}</td><td>${tm?pct(vm[k]/tm,0):'—'}</td><td>${brl(v12[k])}</td><td>${pct(p,0)}</td><td class="l"><span class="pb" style="width:${(p/mx*110).toFixed(0)}px"></span></td></tr>`; });
+  h+=`<tr style="font-weight:700"><td>Total</td><td>${brl(tm)}</td><td>100%</td><td>${brl(t12)}</td><td>100%</td><td></td></tr></tbody>`;
+  document.getElementById('tPag').innerHTML=h;
+}
+function renderPrazo(){
+  const b=B(); lineChart(document.getElementById('cPrazo'),[{n:'Prazo médio de recebimento',c:'var(--brand)',v:M.map((_,k)=>b.prazo.den[k]?Math.round(b.prazo.num[k]/b.prazo.den[k]):null)}],{h:230,yf:v=>nf(v)+' d',tf:v=>nf(v)+' dias'});
+}
+function renderTop(){
+  const b=B(), cc=b.conc, rows=b.top, tot=cc.rev||1;
+  document.getElementById('capTop').textContent=`Receita de clientes identificados de ${D.info.inicio12} a ${D.info.ultimo}: ${brlK(cc.rev)}. Os 20 maiores somam ${pct(cc.top20)} e os ${nf(cc.k10)} maiores (10% de ${nf(cc.n)} clientes) somam ${pct(cc.top10pct)}.`;
+  let h='<thead><tr><th>#</th><th class="l">Cliente</th><th class="l">Empresa</th><th>Receita 12 meses</th><th>% do total</th><th>Compras</th><th>Última compra</th><th class="l">Tipos</th></tr></thead><tbody>';
+  rows.forEach((r,k)=>{ h+=`<tr><td>${k+1}</td><td class="l">${esc(r.c)}</td><td class="l">${esc(r.e.replace(/JB /g,''))}</td><td>${brl(r.v)}</td><td>${pct(r.v/tot)}</td><td>${nf(r.n)}</td><td>${esc(r.ult)}</td><td class="l">${esc(r.tipos)}</td></tr>`; });
+  document.getElementById('tTop').innerHTML=h+'</tbody>';
+  document.getElementById('bTopCsv').onclick=()=>csvGen(['Posição','Cliente','Empresa','Receita 12 meses','Compras','Última compra','Tipos'],rows.map((r,k)=>[k+1,r.c,r.e,String(r.v).replace('.',','),r.n,r.ult,r.tipos]),'maiores_clientes_'+st.emp.replace(/ /g,'_'));
+}
+function renderMrr(){
+  const b=B(); lineChart(document.getElementById('cMrr'),[{n:'Receita contratada por mês',c:'var(--brand)',v:b.mrr}],{h:200,l:56,yf:axK,tf:v=>brl(v)+' por mês'});
+}
+
 /* ---------- render ---------- */
 function render(){
+  renderResumo(); renderAcum(); renderEmpM();
   renderTiles(); renderStack(); renderDiv(); renderYoy(); renderTable(); renderMatrix();
-  renderRecTiles(); renderNovos(); renderRenov(); renderCart(); renderX(); renderOpp();
+  renderPag(); renderPrazo(); renderTop();
+  renderRecTiles(); renderNovos(); renderRenov(); renderCart(); renderMrr(); renderX(); renderOpp();
 }
 renderTextos(); renderIns(); renderNotes(); render();
-let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ renderStack(); renderDiv(); renderYoy(); renderNovos(); renderRenov(); renderCart(); },120); });
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ renderAcum(); renderEmpM(); renderStack(); renderDiv(); renderYoy(); renderPrazo(); renderNovos(); renderRenov(); renderCart(); renderMrr(); },120); });
 }
 </script>
 </body>

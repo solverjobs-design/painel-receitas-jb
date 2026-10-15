@@ -3,6 +3,7 @@
   "aba": "Lançamento de Receitas",
   "intervalo": "A1:K",
   "titulo": "Receitas JB",
+  "logo": "https://static.wixstatic.com/media/8273b0_a841661fa57841ca9a4fa58b1769bdd4~mv2.png/v1/fill/w_240,h_190,al_c,q_90/logo.png",
   "inicio": "2025-01",
   "linhas_minimas": 500,
   "colunas": {

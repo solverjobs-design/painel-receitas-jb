@@ -6,6 +6,17 @@ Painel online com as receitas da aba **Lançamento de Receitas** da planilha do 
 - **Repositório:** https://github.com/solverjobs-design/painel-receitas-jb
 - **Acesso:** o link pede uma senha. Solver e cliente usam a mesma. Marcando "Lembrar neste aparelho", a senha não é pedida de novo naquele navegador. O botão **Sair** apaga a senha guardada.
 
+## O que o painel mostra
+
+- **Resumo executivo:** receita dos últimos 12 meses, projeção de fechamento do mês em andamento (a partir do dia 7), receita mensal contratada em planos, clientes ativos, clientes sem atendimento há mais de 90 dias, peso dos maiores clientes, receita acumulada no ano contra o ano anterior e receita por empresa.
+- **Mês selecionado:** receita, acumulado do ano, lançamentos, ticket médio e clientes, com comparação contra o mês anterior ou contra o mesmo mês do ano anterior.
+- **Por tipo:** receita mês a mês, o que mudou em cada tipo, acumulado do ano e tabela completa.
+- **Recebimento e concentração:** receita por forma de pagamento, prazo médio estimado de recebimento e os 20 maiores clientes dos últimos 12 meses.
+- **Retenção:** recompra, renovação, conversão de consultas, carteira ativa e receita contratada em planos.
+- **Venda cruzada, Tendências e Oportunidades:** textos e listas de clientes recalculados a cada atualização (com download em CSV).
+
+A identidade visual segue o site da Júlio Borba Fisioterapia. O endereço do logo fica em `config.json` (`"logo"`).
+
 ## O que o cliente precisa fazer
 
 Só continuar preenchendo a planilha como sempre. O painel lê a planilha todo dia às 6h e mostra **"Dados atualizados em DD/MM/AAAA HH:MM"** no topo.

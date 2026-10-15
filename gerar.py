@@ -33,7 +33,8 @@ FISIO = ('Atendimento', 'FC')
 NAO_TRATAMENTO = {'Consulta', 'Produtos', 'Avaliações', 'Outros'}
 SEM_CORE = {'Consulta', 'Produtos', 'Avaliações'}
 OBRIGATORIAS = ('empresa', 'cliente', 'pagamento', 'inicio', 'tratamento', 'fim', 'valor')
-D30, D90 = dt.timedelta(days=30), dt.timedelta(days=90)
+D30, D90, D365 = dt.timedelta(days=30), dt.timedelta(days=90), dt.timedelta(days=365)
+FORMAS = ['Pix', 'Dinheiro', 'Débito', 'Crédito à vista', 'Crédito 2 a 6x', 'Crédito 7 a 12x', 'Outras / não informada']
 
 
 class ErroPainel(Exception):
@@ -308,6 +309,29 @@ def eh_plano(x):
     return x.tipo in PLANOS and x.cli and x.fim is not None and (dur_plano(x) or 0) >= 7
 
 
+def forma(f):
+    """Grupo da forma de pagamento e prazo estimado de recebimento em dias (None se desconhecido).
+    Crédito em N vezes sem antecipação: parcelas em 30, 60, ... 30N dias, média 30(N+1)/2."""
+    n = norm(f)
+    if 'pix' in n:
+        return 'Pix', 0
+    if 'dinheiro' in n:
+        return 'Dinheiro', 0
+    if 'debito' in n:
+        return 'Débito', 1
+    if 'credito' in n:
+        m = re.search(r'(\d+)\s*x', n)
+        p = int(m.group(1)) if m else 1
+        g = 'Crédito à vista' if p <= 1 else 'Crédito 2 a 6x' if p <= 6 else 'Crédito 7 a 12x'
+        return g, 30 * (p + 1) / 2
+    return FORMAS[-1], None
+
+
+def mensal(x):
+    """Valor do plano dividido pela duração em meses (mínimo 1 mês)."""
+    return x.val / max(1.0, ((x.fim - (x.ini or x.pg)).days + 1) / 30.4375)
+
+
 class Ctx:
     """Tudo que é do grupo inteiro e serve para os recortes por empresa."""
 
@@ -413,12 +437,54 @@ def bloco(ctx, L, tipos):
             consultas.setdefault((x.cli, x.pg), x)
     conv, conv_s, conv_n = taxa_serie(ctx, consultas.values(), ctx.converteu, lambda c: mes(c.pg))
 
-    carteira = []
+    carteira, mrr = [], []
     vig = [x for x in L if eh_plano(x)]
     for k in M:
         d = dt.date(int(k[:4]), int(k[5:7]), 15)
         d = min(d, ctx.ultimo)
-        carteira.append(len({x.cli for x in vig if (x.ini or x.pg) <= d <= x.fim}))
+        ativos_d = [x for x in vig if (x.ini or x.pg) <= d <= x.fim]
+        carteira.append(len({x.cli for x in ativos_d}))
+        mrr.append(round(sum(mensal(x) for x in ativos_d)))
+    R = ctx.ultimo
+    mrr_hoje = round(sum(mensal(x) for x in vig if (x.ini or x.pg) <= R <= x.fim))
+
+    # recebimento: receita por forma de pagamento e prazo médio estimado
+    pag = {g: [0.0] * n for g in FORMAS}
+    prazo_num, prazo_den = [0.0] * n, [0.0] * n
+    for x in L:
+        i = mi.get(mes(x.pg))
+        if i is None:
+            continue
+        g, p = forma(x.forma)
+        pag[g][i] += x.val
+        if p is not None:
+            prazo_num[i] += x.val * p
+            prazo_den[i] += x.val
+
+    # clientes ativos, base em risco, concentração (janelas de 90 e 365 dias até o último lançamento)
+    ult, fim_max, g12 = {}, {}, collections.defaultdict(float)
+    datas12, tipos12, emps12 = collections.defaultdict(set), collections.defaultdict(set), collections.defaultdict(set)
+    ly = set()
+    for x in L:
+        if not x.cli:
+            continue
+        c = x.cli
+        ult[c] = max(ult.get(c, x.pg), x.pg)
+        fim_max[c] = max(fim_max.get(c, x.pg), x.fim or x.pg)
+        if x.pg > R - D365:
+            g12[c] += x.val
+            datas12[c].add(x.pg)
+            tipos12[c].add(x.tipo)
+            emps12[c].add(x.emp)
+        if R - D365 - D90 < x.pg <= R - D365:
+            ly.add(c)
+    risco = [c for c in ult if R - D365 < ult[c] <= R - D90 and fim_max[c] < R - D90]
+    ordem = sorted(g12.items(), key=lambda kv: -kv[1])
+    tot12 = sum(v for _, v in ordem)
+    k10 = max(1, round(len(ordem) * 0.1))
+    ini_dados = dt.date(int(M[0][:4]), int(M[0][5:7]), 1)
+    rev12 = sum(x.val for x in L if x.pg > R - D365)
+    rev12a = sum(x.val for x in L if R - 2 * D365 < x.pg <= R - D365) if R - 2 * D365 >= ini_dados - dt.timedelta(days=1) else None
 
     # clientes, recompra
     datas = collections.defaultdict(set)
@@ -488,6 +554,18 @@ def bloco(ctx, L, tipos):
         },
         'matrix': {'tipos': mt, 'm': m},
         'fisioMov': {'base': len(fisio), 'mov': mov},
+        'mrr': mrr, 'mrrHoje': mrr_hoje,
+        'pag': {g: [r2(v) for v in pag[g]] for g in FORMAS},
+        'prazo': {'num': [r2(v) for v in prazo_num], 'den': [r2(v) for v in prazo_den]},
+        'ltm': {'v': r2(rev12), 'ant': r2(rev12a) if rev12a is not None else None},
+        'cli90': {'ativos': sum(1 for d in ult.values() if d > R - D90),
+                  'ativosLY': len(ly) if R - D365 - D90 >= ini_dados else None,
+                  'risco': len(risco), 'riscoV': r2(sum(g12[c] for c in risco))},
+        'conc': {'n': len(ordem), 'rev': r2(tot12), 'k10': k10,
+                 'top10pct': round(sum(v for _, v in ordem[:k10]) / tot12, 4) if tot12 else 0,
+                 'top20': round(sum(v for _, v in ordem[:20]) / tot12, 4) if tot12 else 0},
+        'top': [{'c': ctx.nome[c], 'v': r2(v), 'n': len(datas12[c]), 'ult': dm(ult[c]),
+                 'tipos': ', '.join(sorted(tipos12[c])), 'e': ' + '.join(sorted(emps12[c]))} for c, v in ordem[:20]],
     }
 
 
@@ -499,8 +577,12 @@ def oportunidades(ctx):
     def pacote(x):
         return sum(y.val for y in ctx.compras[x.cli] if y.pg == x.pg and y.tipo == x.tipo)
 
-    venc, jan, vindo, fis, cons = [], [], [], [], []
+    venc, jan, vindo, fis, cons, inat = [], [], [], [], [], []
     for c, xs in ctx.compras.items():
+        # sem nenhum atendimento em andamento há mais de 90 dias, mas comprou nos últimos 12 meses
+        u = xs[-1]
+        if R - D365 < u.pg <= R - D90 and max(x.fim or x.pg for x in xs) < R - D90:
+            inat.append(linha(u, sum(x.val for x in xs if x.pg > R - D365)))
         planos = [x for x in xs if eh_plano(x)]
         if planos:
             u = max(planos, key=lambda x: (x.fim, x.pg))
@@ -525,8 +607,11 @@ def oportunidades(ctx):
                 cons.append(linha(u, u.val))
 
     out = {}
-    for k, rows in (('vencidos', venc), ('janela', jan), ('vencendo', vindo), ('fisioSemMov', fis), ('consSemConv', cons)):
-        rows.sort(key=lambda r: (r['_o'], r['v']), reverse=k != 'vencendo')
+    for k, rows in (('vencidos', venc), ('janela', jan), ('vencendo', vindo), ('fisioSemMov', fis), ('consSemConv', cons), ('inativos', inat)):
+        if k == 'inativos':
+            rows.sort(key=lambda r: -r['v'])
+        else:
+            rows.sort(key=lambda r: (r['_o'], r['v']), reverse=k != 'vencendo')
         for r in rows:
             r.pop('_o')
         out[k] = rows
@@ -538,17 +623,21 @@ def textos_opp(ctx, kpi):
     ren = ''
     if kpi['renPilates'] is not None and kpi['renTF'] is not None:
         ren = f' Estão dentro da janela de 30 dias, quando a renovação histórica é de {pct(kpi["renPilates"])} no Pilates e {pct(kpi["renTF"])} no TF.'
+    fim, pg = {'col': 'fim', 'colNome': 'Fim'}, {'col': 'pg', 'colNome': 'Consulta'}
     return [
         {'k': 'vencidos', 't': f'Reativar: TF ou Pilates vencido entre {dm(R - D90)} e {dm(R - d31)}',
-         'p': f'O último plano venceu há mais de 30 dias e o cliente não comprou outro plano de TF ou Pilates até {dm(R)}.'},
+         'p': f'O último plano venceu há mais de 30 dias e o cliente não comprou outro plano de TF ou Pilates até {dm(R)}.', **fim},
         {'k': 'janela', 't': 'Renovar agora: vencidos nos últimos 30 dias',
-         'p': f'Venceram entre {dm(R - D30)} e {dm(R - dt.timedelta(days=1))} e ainda não renovaram.{ren}'},
+         'p': f'Venceram entre {dm(R - D30)} e {dm(R - dt.timedelta(days=1))} e ainda não renovaram.{ren}', **fim},
         {'k': 'vencendo', 't': 'Antecipar: vencem nos próximos 30 dias',
-         'p': f'Planos de TF ou Pilates com fim entre {dm(R)} e {dm(R + D30)}. Abordar antes do vencimento.'},
+         'p': f'Planos de TF ou Pilates com fim entre {dm(R)} e {dm(R + D30)}. Abordar antes do vencimento.', **fim},
         {'k': 'fisioSemMov', 't': 'Fisio → TF ou Pilates',
-         'p': f'O pacote de Atendimento ou FC (7 dias ou mais) terminou entre {dm(R - D90)} e {dm(R)}, o paciente nunca comprou TF ou Pilates e não comprou mais nada desde então.'},
+         'p': f'O pacote de Atendimento ou FC (7 dias ou mais) terminou entre {dm(R - D90)} e {dm(R)}, o paciente nunca comprou TF ou Pilates e não comprou mais nada desde então.', **fim},
         {'k': 'consSemConv', 't': f'Consultas sem tratamento ({dm(R - D90)} a {dm(R - d31)})',
-         'p': f'A consulta foi feita e não houve compra de tratamento depois dela até {dm(R)}.'},
+         'p': f'A consulta foi feita e não houve compra de tratamento depois dela até {dm(R)}.', **pg},
+        {'k': 'inativos', 't': 'Reconquistar: sem atendimento há mais de 90 dias',
+         'p': f'Compraram depois de {dm(R - D365)}, mas não têm plano nem pacote em andamento desde {dm(R - D90)} e não voltaram. '
+              'Aqui o valor de referência é quanto o cliente gastou nos últimos 12 meses.', 'col': 'pg', 'colNome': 'Última compra'},
     ]
 
 
@@ -706,6 +795,53 @@ def tendencias(ctx, D, inicio):
             f'com 3, {brl(ds["3"]["gasto"])}; com 4 ou mais, {brl(ds["4"]["gasto"])}. Quem comprou 2 tipos ou mais ({pct(cr["multi"])} dos clientes) '
             f'gerou <b>{pct(cr["revMulti"])} da receita</b>. Sem contar consulta, produtos e avaliações, {pct(cr["multiCore"])} compram dois serviços diferentes ou mais.')})
 
+    # 8. receita recorrente contratada em planos
+    mr = b['mrr']
+    k = len(ctx.M) - (2 if ctx.parcial else 1)
+    if k >= 12 and mr[k - 12]:
+        ins.append({'t': 'Receita recorrente dos planos', 'p': (
+            f'Somando o valor mensal de cada plano de TF e Pilates em vigor (valor do plano dividido pela duração), a receita contratada '
+            f'era de <b>{brlK(mr[k])} por mês</b> em {ml(ctx.M[k])}, contra {brlK(mr[k - 12])} em {ml(ctx.M[k - 12])} ({dpct(var(mr[k - 12], mr[k]))}). '
+            'É a parte da receita que já está garantida antes de o mês começar.')})
+
+    # 9. como o dinheiro entra
+    def receb(S):
+        g, num, den = collections.Counter(), 0.0, 0.0
+        for x in S['xs']:
+            gg, p = forma(x.forma)
+            g[gg] += x.val
+            if p is not None:
+                num += x.val * p
+                den += x.val
+        return g, (num / den if den else None)
+    g1, pr1 = receb(S1)
+    g0, pr0 = receb(S0)
+    if S1['v'] and S0['v'] and pr1 is not None:
+        parc = lambda g, S: (g['Crédito 2 a 6x'] + g['Crédito 7 a 12x']) / S['v']
+        ins.append({'t': 'Como o dinheiro entra', 'p': (
+            f'{lab1.capitalize()}, <b>{pct(parc(g1, S1))}</b> da receita entrou em crédito parcelado ({pct(g1["Crédito 7 a 12x"] / S1["v"])} em 7 a 12 vezes), '
+            f'contra {pct(parc(g0, S0))} {lab0}. Pix e dinheiro somaram {pct((g1["Pix"] + g1["Dinheiro"]) / S1["v"])}. '
+            f'Sem antecipação, o prazo médio estimado para o dinheiro entrar é de <b>{nf(pr1)} dias</b>'
+            + (f' (eram {nf(pr0)})' if pr0 is not None else '') + '.')})
+
+    # 10. concentração
+    cc = b['conc']
+    if cc['n'] >= 50:
+        alta = cc['top10pct'] >= 0.4
+        ins.append({'t': 'Concentração de receita' + (' alta' if alta else ''), 'p': (
+            f'Nos últimos 12 meses, os {nf(cc["k10"])} maiores clientes (10% dos {nf(cc["n"])} atendidos) geraram <b>{pct(cc["top10pct"])}</b> da receita, '
+            f'e os 20 maiores, {pct(cc["top20"])}.'
+            + (' Com essa concentração, perder poucos clientes grandes pesa no faturamento; vale um acompanhamento próximo deles.' if alta else
+               ' A receita está bem distribuída, sem dependência forte de poucos clientes.'))})
+
+    # oportunidades: base em risco
+    r = b['cli90']
+    if r['risco']:
+        opp.append({'t': 'Reativar quem parou', 'p': (
+            f'<b>{nf(r["risco"])} clientes</b> que compraram nos últimos 12 meses estão há mais de 90 dias sem plano ou pacote em andamento. '
+            f'Juntos, gastaram <b>{brlK(r["riscoV"])}</b> nos últimos 12 meses. Na fisioterapia, parte disso é alta natural do tratamento; '
+            'ainda assim, é a base mais barata para oferecer TF, Pilates ou uma reavaliação. A lista “Reconquistar” traz os nomes, do maior para o menor valor.')})
+
     # oportunidades: fisio → movimento, renovação, combinações
     f = b['fisioMov']
     if f['base'] >= 20:
@@ -770,6 +906,8 @@ def calcular(lanc, extra, cfg, hoje, agora):
     for e in emps:
         D['emp'][e] = bloco(ctx, [x for x in lanc if x.emp == e], tipos)
 
+    D['revEmp'] = {e: [r2(sum(D['emp'][e]['rev'][t][i] for t in tipos)) for i in range(len(M))] for e in emps}
+    D['formas'] = FORMAS
     comb = collections.Counter(' + '.join(sorted({x.emp for x in xs})) for xs in ctx.compras.values())
     D['empresasCli'] = dict(comb.most_common())
     D['opp'] = oportunidades(ctx)
@@ -799,6 +937,7 @@ def calcular(lanc, extra, cfg, hoje, agora):
         'aba': cfg['aba'], 'ultimo': dma(ctx.ultimo), 'gerado': agora.strftime('%d/%m/%Y %H:%M'),
         'primeira': dm(lanc[0].pg), 'corte': dm(ctx.corte) if ctx.corte else None,
         'corte90': dm(ctx.corte90), 'periodoTodo': f'{dm(lanc[0].pg)} a {dm(ctx.ultimo)}',
+        'inicio12': dm(ctx.ultimo - D365 + dt.timedelta(days=1)),
     }
     D['ins'], D['insOpp'] = tendencias(ctx, D, cfg.get('inicio', M[0]))
     return D
@@ -827,7 +966,8 @@ def gravar(D, cfg, saida):
         raise ErroPainel('modelo.html sem o marcador /*__CIFRA__*/null')
     cifra = criptografar(json.dumps(D, ensure_ascii=False, separators=(',', ':')), senha)
     pagina = (modelo.replace('/*__CIFRA__*/null', json.dumps(cifra))
-              .replace('__TITULO__', html.escape(cfg.get('titulo', 'Painel'))))
+              .replace('__TITULO__', html.escape(cfg.get('titulo', 'Painel')))
+              .replace('__LOGO__', html.escape(cfg.get('logo', ''), quote=True)))
     saida.mkdir(parents=True, exist_ok=True)
     (saida / 'index.html').write_text(pagina, encoding='utf-8')
     (saida / 'robots.txt').write_text('User-agent: *\nDisallow: /\n', encoding='utf-8')
