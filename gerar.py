@@ -327,11 +327,6 @@ def forma(f):
     return FORMAS[-1], None
 
 
-def mensal(x):
-    """Valor do plano dividido pela duração em meses (mínimo 1 mês)."""
-    return x.val / max(1.0, ((x.fim - (x.ini or x.pg)).days + 1) / 30.4375)
-
-
 class Ctx:
     """Tudo que é do grupo inteiro e serve para os recortes por empresa."""
 
@@ -437,16 +432,14 @@ def bloco(ctx, L, tipos):
             consultas.setdefault((x.cli, x.pg), x)
     conv, conv_s, conv_n = taxa_serie(ctx, consultas.values(), ctx.converteu, lambda c: mes(c.pg))
 
-    carteira, mrr = [], []
+    carteira = []
     vig = [x for x in L if eh_plano(x)]
     for k in M:
         d = dt.date(int(k[:4]), int(k[5:7]), 15)
         d = min(d, ctx.ultimo)
         ativos_d = [x for x in vig if (x.ini or x.pg) <= d <= x.fim]
         carteira.append(len({x.cli for x in ativos_d}))
-        mrr.append(round(sum(mensal(x) for x in ativos_d)))
     R = ctx.ultimo
-    mrr_hoje = round(sum(mensal(x) for x in vig if (x.ini or x.pg) <= R <= x.fim))
 
     # recebimento: receita por forma de pagamento e prazo médio estimado
     pag = {g: [0.0] * n for g in FORMAS}
@@ -483,8 +476,6 @@ def bloco(ctx, L, tipos):
     tot12 = sum(v for _, v in ordem)
     k10 = max(1, round(len(ordem) * 0.1))
     ini_dados = dt.date(int(M[0][:4]), int(M[0][5:7]), 1)
-    rev12 = sum(x.val for x in L if x.pg > R - D365)
-    rev12a = sum(x.val for x in L if R - 2 * D365 < x.pg <= R - D365) if R - 2 * D365 >= ini_dados - dt.timedelta(days=1) else None
 
     # clientes, recompra
     datas = collections.defaultdict(set)
@@ -554,10 +545,8 @@ def bloco(ctx, L, tipos):
         },
         'matrix': {'tipos': mt, 'm': m},
         'fisioMov': {'base': len(fisio), 'mov': mov},
-        'mrr': mrr, 'mrrHoje': mrr_hoje,
         'pag': {g: [r2(v) for v in pag[g]] for g in FORMAS},
         'prazo': {'num': [r2(v) for v in prazo_num], 'den': [r2(v) for v in prazo_den]},
-        'ltm': {'v': r2(rev12), 'ant': r2(rev12a) if rev12a is not None else None},
         'cli90': {'ativos': sum(1 for d in ult.values() if d > R - D90),
                   'ativosLY': len(ly) if R - D365 - D90 >= ini_dados else None,
                   'risco': len(risco), 'riscoV': r2(sum(g12[c] for c in risco))},
@@ -644,8 +633,9 @@ def textos_opp(ctx, kpi):
 # ---------------------------------------------------------------- textos automáticos
 
 def periodos(ctx, inicio):
-    """Período atual e o mesmo período do ano anterior. No 1º trimestre, usa 12 meses móveis."""
-    u = ctx.ultimo
+    """Período atual e o mesmo período do ano anterior, sempre até o último mês fechado.
+    No 1º trimestre, usa 12 meses móveis."""
+    u = fim_do_mes(ctx.M[-2] if ctx.parcial and len(ctx.M) > 1 else ctx.M[-1])
     ini_dados = dt.date(int(inicio[:4]), int(inicio[5:7]), 1)
     a1 = dt.date(u.year, 1, 1)
     if (u - a1).days < 90 and u - dt.timedelta(days=729) >= ini_dados:
@@ -795,16 +785,7 @@ def tendencias(ctx, D, inicio):
             f'com 3, {brl(ds["3"]["gasto"])}; com 4 ou mais, {brl(ds["4"]["gasto"])}. Quem comprou 2 tipos ou mais ({pct(cr["multi"])} dos clientes) '
             f'gerou <b>{pct(cr["revMulti"])} da receita</b>. Sem contar consulta, produtos e avaliações, {pct(cr["multiCore"])} compram dois serviços diferentes ou mais.')})
 
-    # 8. receita recorrente contratada em planos
-    mr = b['mrr']
-    k = len(ctx.M) - (2 if ctx.parcial else 1)
-    if k >= 12 and mr[k - 12]:
-        ins.append({'t': 'Receita recorrente dos planos', 'p': (
-            f'Somando o valor mensal de cada plano de TF e Pilates em vigor (valor do plano dividido pela duração), a receita contratada '
-            f'era de <b>{brlK(mr[k])} por mês</b> em {ml(ctx.M[k])}, contra {brlK(mr[k - 12])} em {ml(ctx.M[k - 12])} ({dpct(var(mr[k - 12], mr[k]))}). '
-            'É a parte da receita que já está garantida antes de o mês começar.')})
-
-    # 9. como o dinheiro entra
+    # 8. como o dinheiro entra
     def receb(S):
         g, num, den = collections.Counter(), 0.0, 0.0
         for x in S['xs']:
@@ -824,7 +805,7 @@ def tendencias(ctx, D, inicio):
             f'Sem antecipação, o prazo médio estimado para o dinheiro entrar é de <b>{nf(pr1)} dias</b>'
             + (f' (eram {nf(pr0)})' if pr0 is not None else '') + '.')})
 
-    # 10. concentração
+    # 9. concentração
     cc = b['conc']
     if cc['n'] >= 50:
         alta = cc['top10pct'] >= 0.4

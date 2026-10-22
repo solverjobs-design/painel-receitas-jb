@@ -358,17 +358,10 @@ summary:hover{color:var(--brand-ink)}
       <div class="chart" id="cRenov"></div>
     </div>
   </div>
-  <div class="grid g2" style="margin-top:12px">
-    <div class="card">
-      <h3>Carteira ativa de planos TF e Pilates</h3>
-      <div class="cap" id="capCart"></div>
-      <div class="chart" id="cCart"></div>
-    </div>
-    <div class="card">
-      <h3>Receita mensal contratada em planos</h3>
-      <div class="cap">Soma, no dia 15 de cada mês, do valor de cada plano TF ou Pilates vigente dividido pela sua duração em meses (no mês em andamento, na data do último lançamento, antes das renovações do mês). É a receita que já está garantida antes de o mês começar.</div>
-      <div class="chart" id="cMrr"></div>
-    </div>
+  <div class="card" style="margin-top:12px">
+    <h3>Carteira ativa de planos TF e Pilates</h3>
+    <div class="cap" id="capCart"></div>
+    <div class="chart" id="cCart"></div>
   </div>
 </section>
 
@@ -480,10 +473,9 @@ const ml = k => MN[+k.slice(5,7)-1] + '/' + k.slice(2,4) + (PARC && k === M[PARC
 const TOP = D.top;
 const SVAR = {'Demais tipos':'var(--s-other)'}; TOP.forEach((t,k) => SVAR[t] = `var(--s${k+1})`);
 const EMPS = D.emps;
-let st = {emp:'Todas', i:M.length-1, cmp:'mes', mtx:'val'};
-// no mês em andamento, a comparação usa os mesmos dias (1 a PARC.dia) do mês comparado
-const cmpB = b => isP(st.i) ? {rev:b.revAte, qtd:b.qtdAte} : b;
-const ateTxt = () => isP(st.i) ? ` (até dia ${PARC.dia})` : '';
+// regra única: comparações só entre meses fechados; o mês em andamento (*) mostra o valor até agora, sem comparação
+let st = {emp:'Todas', i:(PARC&&M.length>1)?M.length-2:M.length-1, cmp:'mes', mtx:'val'};   // abre no último mês fechado
+const EMAND = `<span class="muted">mês em andamento (lançamentos até ${D.info.ultimo.slice(0,5)}): a comparação aparece quando o mês fechar</span>`;
 
 /* ---------- formatação ---------- */
 const nf = (v,d=0) => v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -559,19 +551,20 @@ function delta(cur,prev,label,money){
   return `<span class="${c}">${ar} ${dpct(r)}</span>${money?` (${dbrl(cur-prev)})`:''} vs ${label}`;
 }
 function renderTiles(){
-  const b=B(), T=totals(b), C=totals(cmpB(b)), i=st.i, j=cmpIdx(i), jl=j>=0?ml(M[j])+ateTxt():'';
+  const b=B(), T=totals(b), i=st.i, j=cmpIdx(i), jl=j>=0?ml(M[j]):'', and=isP(i);
   const v=T.v[i], q=T.q[i], tk=q?v/q:0;
-  const pv=j>=0?C.v[j]:null, pq=j>=0?C.q[j]:null, ptk=(j>=0&&pq)?C.v[j]/pq:null;
+  const pv=j>=0?T.v[j]:null, pq=j>=0?T.q[j]:null, ptk=(j>=0&&pq)?T.v[j]/pq:null;
   const yr=M[i].slice(0,4), i0=Math.max(0,M.indexOf(yr+'-01')); const ytd=sum(T.v.slice(i0,i+1));
   const pi0=M.indexOf((+yr-1)+'-01'); const pk=pi0+(i-i0);
-  const pytd= (pi0>=0 && M.indexOf(yr+'-01')>=0) ? sum(T.v.slice(pi0,pk))+C.v[pk] : null;
+  const pytd= (pi0>=0 && M.indexOf(yr+'-01')>=0) ? sum(T.v.slice(pi0,pk+1)) : null;
   const at=b.ativos[i], nv=b.novos[i], rc=at-nv;
-  const ytdLab=`jan–${MN[+M[i].slice(5)-1]}/${(+yr-1+'').slice(2)}${ateTxt()}`;
+  const ytdLab=`jan a ${MN[+M[i].slice(5)-1]}/${(+yr-1+'').slice(2)}`;
+  const cmp=(cur,prev,money)=>and?EMAND:(j>=0?delta(cur,prev,jl,money):'<span class="muted">sem mês de comparação</span>');
   document.getElementById('tiles').innerHTML =
-    tile(`Receita de ${ml(M[i])}${isP(i)?' (até dia '+PARC.dia+')':''}`, brl(v), j>=0?delta(v,pv,jl,true):'<span class="muted">sem mês de comparação</span>','hero') +
-    tile(`Acumulado jan–${ml(M[i]).slice(0,3)}/${yr.slice(2)}`, brlK(ytd), pytd?delta(ytd,pytd,ytdLab,false):(pytd===0?`<span class="muted">sem receita em ${ytdLab}</span>`:'<span class="muted">sem ano anterior na planilha</span>')) +
-    tile('Lançamentos', nf(q), j>=0?delta(q,pq,jl):'') +
-    tile('Ticket médio por lançamento', q?brl(tk):'—', j>=0&&q?delta(tk,ptk,jl):'') +
+    tile(`Receita de ${ml(M[i])}`, brl(v), cmp(v,pv,true),'hero') +
+    tile(`Acumulado jan a ${ml(M[i]).slice(0,3)}/${yr.slice(2)}`, brlK(ytd), and?EMAND:(pytd?delta(ytd,pytd,ytdLab,false):(pytd===0?`<span class="muted">sem receita em ${ytdLab}</span>`:'<span class="muted">sem ano anterior na planilha</span>'))) +
+    tile('Lançamentos', nf(q), and?'':(j>=0?delta(q,pq,jl):'')) +
+    tile('Ticket médio por lançamento', q?brl(tk):'—', and?'':(j>=0&&q?delta(tk,ptk,jl):'')) +
     tile('Clientes no mês', nf(at), at?`${nf(rc)} recorrentes (${pct(rc/at,0)}) · ${nf(nv)} novos`:'');
   const w=document.getElementById('warnMes'); const sn=b.semNome[i];
   if(sn>0){ w.style.display='block'; w.textContent=`Atenção: ${sn} lançamentos de ${ml(M[i])} estão sem nome de cliente. Eles entram na receita, mas ficam fora da contagem de clientes, de recompra e de venda cruzada.`; }
@@ -611,7 +604,7 @@ function renderStack(){
       if(comPj) txt(s,last?x+bw:lx,y(pj.v)-6,`proj. ${brlK(pj.v)}`,'lbl strong',last?'end':'middle');
       else txt(s,lx,y(tot[i])-6,brlK(tot[i]),'lbl strong'); }
     const hit=S('rect',{x:m.l+i*band,y:m.t,width:band,height:ph,class:'hit',role:'button','aria-label':`${ml(M[i])}: ${brl(tot[i])}`},s);
-    hover(hit,e=>ttShow(e,ml(M[i]),ser.slice().reverse().map(z=>({n:z.n,c:z.c,v:brl(z.v[i])})),comPj?{n:`Total até dia ${PARC.dia} · projeção ${brlK(pj.v)}`,v:brl(tot[i])}:{n:'Total',v:brl(tot[i])}));
+    hover(hit,e=>ttShow(e,ml(M[i]),ser.slice().reverse().map(z=>({n:z.n,c:z.c,v:brl(z.v[i])})),comPj?{n:`Total até ${D.info.ultimo.slice(0,5)} · projeção ${brlK(pj.v)}`,v:brl(tot[i])}:{n:'Total',v:brl(tot[i])}));
     hit.addEventListener('click',()=>selMonth(i)); hit.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selMonth(i);} });
   }
 }
@@ -639,26 +632,28 @@ function divBars(el, rows, opt){
 function renderDiv(){
   const b=B(), i=st.i, j=cmpIdx(i);
   const hd=document.getElementById('hDiv'), cap=document.getElementById('capDiv'), el=document.getElementById('cDiv');
+  if(isP(i)){ hd.textContent=`O que mudou por tipo: ${ml(M[i])}`; cap.innerHTML=EMAND+'. Selecione um mês fechado para ver a comparação.'; el.innerHTML=''; return; }
   if(j<0){ hd.textContent='O que mudou por tipo'; cap.textContent='Não há mês de comparação na planilha para este mês.'; el.innerHTML=''; return; }
-  const T=totals(b), CB=cmpB(b), C=totals(CB); const d=T.v[i]-C.v[j];
-  hd.textContent=`O que mudou por tipo: ${ml(M[j])}${ateTxt()} → ${ml(M[i])}`;
-  cap.textContent=`Total: ${brlK(C.v[j])} → ${brlK(T.v[i])} (${dbrl(d)}, ${dpct(C.v[j]?d/C.v[j]:null)}). Azul = cresceu, vermelho = caiu.`;
-  const rows=D.tipos.map(t=>({n:t,d:b.rev[t][i]-CB.rev[t][j],a:CB.rev[t][j],c:b.rev[t][i]})).filter(r=>Math.abs(r.d)>=1).sort((x,y)=>y.d-x.d);
+  const T=totals(b); const d=T.v[i]-T.v[j];
+  hd.textContent=`O que mudou por tipo: ${ml(M[j])} → ${ml(M[i])}`;
+  cap.textContent=`Total: ${brlK(T.v[j])} → ${brlK(T.v[i])} (${dbrl(d)}, ${dpct(T.v[j]?d/T.v[j]:null)}). Azul = cresceu, vermelho = caiu.`;
+  const rows=D.tipos.map(t=>({n:t,d:b.rev[t][i]-b.rev[t][j],a:b.rev[t][j],c:b.rev[t][i]})).filter(r=>Math.abs(r.d)>=1).sort((x,y)=>y.d-x.d);
   rows.forEach(r=>r.sub=r.a?dpct(r.d/r.a):'novo');
   divBars(el,rows,{tip:r=>[{n:ml(M[j]),v:brl(r.a)},{n:ml(M[i]),v:brl(r.c)},{n:'Variação',v:dbrl(r.d)+' ('+(r.a?dpct(r.d/r.a):'novo')+')'}]});
 }
 function renderYoy(){
-  const b=B(), last=M.length-1, Y=M[last].slice(0,4); let i=st.i; if(M[i].slice(0,4)!==Y) i=last;
+  // só meses fechados: o mês em andamento não entra na comparação acumulada
+  const b=B(), last=kFech(), Y=M[last].slice(0,4); let i=st.i; if(isP(i)||M[i].slice(0,4)!==Y) i=last;
   const i0=M.indexOf(Y+'-01'), p0=M.indexOf((+Y-1)+'-01'), k=i-i0;
-  const mlab=MN[+M[i].slice(5)-1], y1=Y.slice(2), y0=(+Y-1+'').slice(2), at=isP(i)?` (até dia ${PARC.dia})`:'';
+  const mlab=MN[+M[i].slice(5)-1], y1=Y.slice(2), y0=(+Y-1+'').slice(2);
   const el=document.getElementById('cYoy'), cap=document.getElementById('capYoy');
-  document.getElementById('hYoy').textContent=`Acumulado jan–${mlab}/${y1} × jan–${mlab}/${y0} por tipo${at}`;
+  document.getElementById('hYoy').textContent=`Acumulado jan a ${mlab}/${y1} × jan a ${mlab}/${y0} por tipo`;
   if(i0<0||p0<0){ cap.textContent='A planilha ainda não tem o ano anterior completo para comparar.'; el.innerHTML=''; return; }
-  const rows=D.tipos.map(t=>{ const c=sum(b.rev[t].slice(i0,i+1)), a=sum(b.rev[t].slice(p0,p0+k))+(isP(i)?b.revAte[t][p0+k]:b.rev[t][p0+k]); return {n:t,d:c-a,a,c}; }).filter(r=>Math.abs(r.d)>=1).sort((x,y)=>y.d-x.d);
+  const rows=D.tipos.map(t=>{ const c=sum(b.rev[t].slice(i0,i+1)), a=sum(b.rev[t].slice(p0,p0+k+1)); return {n:t,d:c-a,a,c}; }).filter(r=>Math.abs(r.d)>=1).sort((x,y)=>y.d-x.d);
   rows.forEach(r=>r.sub=r.a?dpct(r.d/r.a):'novo');
   const tc=sum(rows.map(r=>r.c)), ta=sum(rows.map(r=>r.a));
-  cap.textContent=(i!==st.i?`O mês selecionado é de outro ano; a comparação vai até ${ml(M[i])}. `:'')+`Total: ${brlK(ta)} → ${brlK(tc)} (${dbrl(tc-ta)}, ${dpct(ta?(tc-ta)/ta:null)}).`;
-  divBars(el,rows,{tip:r=>[{n:`jan–${mlab}/${y0}`,v:brl(r.a)},{n:`jan–${mlab}/${y1}`,v:brl(r.c)},{n:'Variação',v:dbrl(r.d)+' ('+(r.a?dpct(r.d/r.a):'novo')+')'}]});
+  cap.textContent=(i!==st.i?`A comparação vai até ${ml(M[i])}, o último mês fechado do ano. `:'')+`Total: ${brlK(ta)} → ${brlK(tc)} (${dbrl(tc-ta)}, ${dpct(ta?(tc-ta)/ta:null)}).`;
+  divBars(el,rows,{tip:r=>[{n:`jan a ${mlab}/${y0}`,v:brl(r.a)},{n:`jan a ${mlab}/${y1}`,v:brl(r.c)},{n:'Variação',v:dbrl(r.d)+' ('+(r.a?dpct(r.d/r.a):'novo')+')'}]});
 }
 
 /* ---------- tabela por tipo ---------- */
@@ -668,10 +663,10 @@ function spark(vals,i){
 }
 function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function renderTable(){
-  const b=B(), i=st.i, j=cmpIdx(i), T=totals(b), CB=cmpB(b), C=totals(CB);
-  const jl=j>=0?ml(M[j])+ateTxt():'—';
+  const b=B(), i=st.i, j=isP(i)?-1:cmpIdx(i), T=totals(b), CB=b, C=T;
+  const jl=j>=0?ml(M[j]):'—';
   document.getElementById('hTab').textContent=`Variação por tipo em ${ml(M[i])}`;
-  document.getElementById('capTab').textContent=`Comparação com ${st.cmp==='mes'?'o mês anterior':'o mesmo mês do ano anterior'} (${j>=0?ml(M[j]):'—'}). A linha de tendência cobre ${ml(M[0])} a ${ml(M[M.length-1])}, e o ponto marca o mês selecionado.`+(isP(i)?` Como o mês está em andamento, a comparação usa os mesmos dias (1 a ${PARC.dia}) do mês comparado.`:'');
+  document.getElementById('capTab').innerHTML=(isP(i)?EMAND+'. ':`Comparação com ${st.cmp==='mes'?'o mês anterior':'o mesmo mês do ano anterior'} (${j>=0?ml(M[j]):'—'}). `)+`A linha de tendência cobre ${ml(M[0])} a ${ml(M[M.length-1])}, e o ponto marca o mês selecionado.`;
   const tipos=D.tipos.filter(t=>sum(b.rev[t])>0).sort((x,y)=>(b.rev[y][i]-b.rev[x][i])||(sum(b.rev[y])-sum(b.rev[x])));
   let h=`<thead><tr><th>Tipo</th><th>Receita</th><th>Part.</th><th>${esc(jl)}</th><th>Var. R$</th><th>Var. %</th><th>Qtd</th><th>Ticket</th><th style="text-align:left">Tendência</th></tr></thead><tbody>`;
   for(const t of tipos){
@@ -687,15 +682,15 @@ function renderTable(){
 function renderMatrix(){
   const b=B(); const tipos=D.tipos.filter(t=>sum(b.rev[t])>0); const T=totals(b);
   let h='<thead><tr><th>Tipo</th>'+M.map(m=>`<th>${ml(m)}</th>`).join('')+'</tr></thead><tbody>';
-  const TA=b.revAte?totals({rev:b.revAte,qtd:b.qtdAte}).v:null;
-  const rowsAll=[...tipos.map(t=>({n:t,v:b.rev[t],va:b.revAte?b.revAte[t]:null})),{n:'Total',v:T.v,va:TA}];
+  const rowsAll=[...tipos.map(t=>({n:t,v:b.rev[t]})),{n:'Total',v:T.v}];
   for(const r of rowsAll){
     const mx=Math.max(...r.v)||1;
     h+=`<tr${r.n==='Total'?' style="font-weight:600"':''}><td>${esc(r.n)}</td>`;
     r.v.forEach((v,k)=>{
       let txtv, bg='', fg='';
       if(st.mtx==='val'){ txtv=v?nf(v/1000,1):'—'; const a=v/mx; if(v>0){ bg=`rgba(var(--heat),${(0.06+0.6*a).toFixed(2)})`; if(a>0.75) fg='color:#fff'; } }
-      else { const p=k?((isP(k)&&r.va)?r.va[k-1]:r.v[k-1]):0; if(!k||!p){ txtv=v&&k&&!p?'novo':'—'; } else { const d=v/p-1; txtv=dpct(d); const a=Math.min(Math.abs(d),0.6)/0.6; bg=`rgba(var(${d>=0?'--heat':'--heatneg'}),${(0.05+0.55*a).toFixed(2)})`; if(a>0.85) fg='color:#fff'; } }
+      else if(isP(k)){ txtv='—'; }   // mês em andamento: sem variação parcial
+      else { const p=k?r.v[k-1]:0; if(!k||!p){ txtv=v&&k&&!p?'novo':'—'; } else { const d=v/p-1; txtv=dpct(d); const a=Math.min(Math.abs(d),0.6)/0.6; bg=`rgba(var(${d>=0?'--heat':'--heatneg'}),${(0.05+0.55*a).toFixed(2)})`; if(a>0.85) fg='color:#fff'; } }
       h+=`<td class="${k===st.i?'selc':''}" style="${bg?'background:'+bg+';':''}${fg}">${txtv}</td>`;
     });
     h+='</tr>';
@@ -796,8 +791,8 @@ function renderIns(){
 }
 function renderTextos(){
   const I=D.info, n=M.length;
-  document.getElementById('hSub').innerHTML=`Aba “${esc(I.aba)}” · mês definido pela <b>data de pagamento</b> · ${ml(M[0])} a ${ml(M[n-1])} · lançamentos até ${I.ultimo}`+
-    (PARC?` · <span class="muted">* mês em andamento; as comparações usam os mesmos dias do mês comparado</span>`:'');
+  document.getElementById('hSub').innerHTML=`Vendas pela <b>data de pagamento</b>, da aba “${esc(I.aba)}”, sem rateio por competência · ${ml(M[0])} a ${ml(M[n-1])} · lançamentos até ${I.ultimo}`+
+    (PARC?` · <span class="muted">* mês em andamento; as comparações usam só meses fechados</span>`:'');
   document.getElementById('hUpd').textContent=`Atualizado em ${I.gerado}`;
   document.getElementById('fUpd').textContent=`Dados atualizados em ${I.gerado} (horário de Brasília) · lançamentos até ${I.ultimo}`;
   document.getElementById('capNovos').textContent=`“Novo” é quem compra pela primeira vez na base (com filtro de empresa, pela primeira vez naquela empresa). Em ${ml(M[0])} a ${ml(M[Math.min(2,n-1)])} quase todos aparecem como novos porque a planilha começa em ${I.primeira}.`;
@@ -837,6 +832,8 @@ function renderOpp(){
 function renderNotes(){
   const q=D.qual, I=D.info, lista=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1];
   const L=[
+    `<b>Base</b>: vendas da aba “${esc(I.aba)}”, no mês da <b>Data Pagamento</b>. O painel não usa DRE nem rateio por competência, e não é o caixa da DFC: uma venda parcelada no cartão entra inteira no mês em que o cliente pagou.`,
+    `<b>Comparações</b>: sempre entre meses fechados, para que cada mês tenha um único valor em todo o painel. O mês em andamento aparece com *, com o valor até a data do último lançamento e a projeção de fechamento, sem comparação parcial.`,
     `<b>Mês</b> = mês da <b>Data Pagamento</b>. Os gráficos mensais vão de ${ml(M[0])} a ${ml(M[M.length-1])}${PARC?` (o último mês está em andamento, com lançamentos até ${I.ultimo}, e aparece com *)`:''}.`+
       (q.foraN?` Ficam fora deles ${nf(q.foraN)} lançamentos anteriores a ${ml(M[0])} (${brl(q.foraV)}), que entram no histórico dos clientes.`:''),
     `<b>Base</b>: ${nf(q.total)} lançamentos com data de pagamento e valor.`+
@@ -872,49 +869,62 @@ function projecao(b){
   const real=totMes(b.rev,i); return {v:real*f, real, f};
 }
 function renderResumo(){
-  const b=B(), last=M.length-1, k=kFech(), pj=projecao(b), L=b.ltm, c9=b.cli90, cc=b.conc, mr=b.mrr;
-  document.getElementById('subResumo').textContent=`Situação até ${D.info.ultimo} · ${st.emp==='Todas'?'todas as empresas':st.emp}. Estes números olham para o presente e não mudam com o mês selecionado.`;
-  let h=tile('Receita dos últimos 12 meses', brlK(L.v), L.ant?delta(L.v,L.ant,'12 meses anteriores',true):'<span class="muted">a comparação aparece quando houver 2 anos de histórico</span>','hero');
-  if(pj){ const j12=PARC.i-12, ly=j12>=0?totMes(b.rev,j12):null;
-    h+=tile(`Projeção de fechamento de ${ml(M[last]).replace('*','')}`, brlK(pj.v), `realizado até dia ${PARC.dia}: ${brlK(pj.real)}`+(ly?`<br>${delta(pj.v,ly,ml(M[j12]),false)}`:''),'acc');
-  } else if(PARC){ const v=totMes(b.rev,last), j12=last-12, ly=j12>=0&&b.revAte?totMes(b.revAte,j12):null;
-    h+=tile(`${ml(M[last]).replace('*','')} até dia ${PARC.dia}`, brlK(v), (ly?`${delta(v,ly,ml(M[j12])+' até dia '+PARC.dia,false)}<br>`:'')+'<span class="muted">a projeção de fechamento aparece a partir do dia 7</span>','acc');
-  } else { const v=totMes(b.rev,last), j12=last-12, ly=j12>=0?totMes(b.rev,j12):null;
-    h+=tile(`Receita de ${ml(M[last])}`, brlK(v), ly?delta(v,ly,ml(M[j12]),true):'','acc'); }
-  h+=tile('Receita contratada em planos', `${brlK(mr[k])}<span class="u">/mês</span>`, `TF e Pilates vigentes em ${ml(M[k])}`+((k>=12&&mr[k-12])?`<br>${delta(mr[k],mr[k-12],ml(M[k-12]),false)}`:''),'acc');
+  const b=B(), last=M.length-1, k=kFech(), pj=projecao(b), c9=b.cli90, cc=b.conc;
+  // 12 últimos meses fechados: é a soma exata das barras do gráfico
+  const soma12=z=>z-11>=0?sum(Array.from({length:12},(_,u)=>totMes(b.rev,z-u))):null;
+  const L={v:soma12(k)??sum(Array.from({length:k+1},(_,u)=>totMes(b.rev,u))), ant:soma12(k-12)};
+  document.getElementById('subResumo').textContent=`Situação até ${D.info.ultimo} · ${st.emp==='Todas'?'todas as empresas':st.emp}. Estes números olham para o presente e não mudam com o mês selecionado. Comparações sempre entre meses fechados.`;
+  const fechado=kk=>{ const v=totMes(b.rev,kk), j12=kk-12, ly=j12>=0?totMes(b.rev,j12):null;
+    return tile(`Receita de ${ml(M[kk])} (último mês fechado)`, brlK(v), ly?delta(v,ly,ml(M[j12]),true):'<span class="muted">sem o mesmo mês do ano anterior</span>','acc'); };
+  let h=tile(`Receita dos 12 últimos meses fechados (${ml(M[Math.max(0,k-11)])} a ${ml(M[k])})`, brlK(L.v), L.ant?delta(L.v,L.ant,'12 meses anteriores',true):'<span class="muted">a comparação aparece quando houver 2 anos de histórico</span>','hero');
+  if(PARC){
+    const mlab=ml(M[last]).replace('*','');
+    if(pj){ const j12=PARC.i-12, ly=j12>=0?totMes(b.rev,j12):null;   // projeção do mês inteiro contra o mês inteiro do ano anterior
+      h+=tile(`Projeção de fechamento de ${mlab}`, brlK(pj.v), `realizado até ${D.info.ultimo.slice(0,5)}: ${brlK(pj.real)}`+(ly?`<br>${delta(pj.v,ly,ml(M[j12])+' (mês inteiro)',false)}`:''),'acc');
+    } else h+=tile(`${mlab}, mês em andamento`, brlK(totMes(b.rev,last)), `realizado até ${D.info.ultimo.slice(0,5)} · a projeção de fechamento aparece a partir do dia 7`,'acc');
+    if(k>=0) h+=fechado(k);
+  } else {
+    h+=fechado(last);
+    const Y=M[last].slice(0,4), i0=M.indexOf(Y+'-01'), p0=M.indexOf((+Y-1)+'-01'), n=last-i0;
+    const ytd=i0>=0?sum(Array.from({length:n+1},(_,z)=>totMes(b.rev,i0+z))):0, pytd=p0>=0?sum(Array.from({length:n+1},(_,z)=>totMes(b.rev,p0+z))):null;
+    h+=tile(`Acumulado jan a ${MN[+M[last].slice(5)-1]}/${Y.slice(2)}`, brlK(ytd), pytd?delta(ytd,pytd,`jan a ${MN[+M[last].slice(5)-1]}/${String(+Y-1).slice(2)}`,true):'','acc');
+  }
   h+=tile('Clientes ativos (90 dias)', nf(c9.ativos), c9.ativosLY?delta(c9.ativos,c9.ativosLY,'mesma janela do ano anterior',false):'com compra nos últimos 90 dias');
   h+=tile('Sem atendimento há 90+ dias', nf(c9.risco), `clientes dos últimos 12 meses, que gastaram ${brlK(c9.riscoV)} · lista em Oportunidades`);
   h+=tile('Peso dos 10% maiores clientes', pct(cc.top10pct,0), `${nf(cc.k10)} de ${nf(cc.n)} clientes nos últimos 12 meses · 20 maiores: ${pct(cc.top20,0)}`);
   document.getElementById('tilesResumo').innerHTML=h;
 }
 function renderAcum(){
-  const b=B(), last=M.length-1, Y=M[last].slice(0,4), Y0=String(+Y-1), T=totals(b).v, pj=projecao(b);
-  const serie=yr=>{ if(M.indexOf(yr+'-01')<0) return null; const out=Array(12).fill(null); let acc=0;
-    for(let m=0;m<12;m++){ const i=M.indexOf(`${yr}-${String(m+1).padStart(2,'0')}`); if(i<0) break; acc+=T[i]; out[m]=acc; } return out; };
-  const cur=serie(Y), ant=serie(Y0), mi=+M[last].slice(5)-1;
+  // linhas só com meses fechados; o mês em andamento entra apenas como projeção tracejada (mês inteiro estimado)
+  const b=B(), last=M.length-1, kf=kFech(), Y=M[last].slice(0,4), Y0=String(+Y-1), T=totals(b).v, pj=projecao(b);
+  const serie=(yr,ate)=>{ if(M.indexOf(yr+'-01')<0) return null; const out=Array(12).fill(null); let acc=0;
+    for(let m=0;m<12;m++){ const i=M.indexOf(`${yr}-${String(m+1).padStart(2,'0')}`); if(i<0||i>ate) break; acc+=T[i]; out[m]=acc; } return out; };
+  const cur=serie(Y,kf)||Array(12).fill(null), ant=serie(Y0,last);
+  const mc=cur.reduce((a,z,k)=>z!=null?k:a,-1);           // último mês fechado do ano (índice 0 a 11), -1 se nenhum
+  const mp=PARC&&M[last].slice(0,4)===Y?+M[last].slice(5)-1:null;   // mês em andamento
   const el=document.getElementById('cAcum'), cap=document.getElementById('capAcum'), lg=document.getElementById('lgAcum');
   document.getElementById('hAcum').textContent=`Receita acumulada no ano: ${Y} × ${Y0}`;
-  if(!cur){ el.innerHTML=''; cap.textContent='Sem dados do ano atual.'; lg.innerHTML=''; return; }
-  const curPj=(pj&&cur[mi]!=null)?cur[mi]-pj.real+pj.v:null;
-  let antMesmo=null;
-  if(ant){ const j=M.indexOf(`${Y0}-${String(mi+1).padStart(2,'0')}`); antMesmo=(mi?ant[mi-1]:0)+(PARC&&b.revAte?totMes(b.revAte,j):T[j]); }
-  cap.innerHTML=`Até ${D.info.ultimo.slice(0,5)}: <b>${brlK(cur[mi])}</b> em ${Y}`+(antMesmo!=null?` contra ${brlK(antMesmo)} no mesmo período de ${Y0} (${dpct(antMesmo?cur[mi]/antMesmo-1:null)}).`:'.')+(curPj?` Com a projeção do mês, ${Y} chega a ${brlK(curPj)} até o fim de ${MN[mi]}.`:'');
-  lg.innerHTML=`<span><i class="ln" style="background:var(--brand)"></i>${Y}</span>`+(ant?`<span><i class="ln" style="background:var(--ly)"></i>${Y0}</span>`:'')+(curPj?`<span><i class="dash"></i>Projeção do mês</span>`:'');
+  const curPj=(pj&&mp!=null)?(mc>=0?cur[mc]:0)+pj.v:null;
+  if(mc<0&&!curPj){ el.innerHTML=''; cap.textContent='Ainda não há mês fechado neste ano.'; lg.innerHTML=''; return; }
+  cap.innerHTML=(mc>=0?`Jan a ${MN[mc]}: <b>${brlK(cur[mc])}</b> em ${Y}`+(ant&&ant[mc]!=null?` contra ${brlK(ant[mc])} em ${Y0} (${dpct(ant[mc]?cur[mc]/ant[mc]-1:null)}).`:'.'):'')
+    +(curPj?` Com a projeção de ${MN[mp]}, ${Y} chega a ${brlK(curPj)} até o fim do mês`+(ant&&ant[mp]!=null?`, contra ${brlK(ant[mp])} em ${Y0}.`:'.'):'');
+  lg.innerHTML=`<span><i class="ln" style="background:var(--brand)"></i>${Y}</span>`+(ant?`<span><i class="ln" style="background:var(--ly)"></i>${Y0}</span>`:'')+(curPj?`<span><i class="dash"></i>Projeção do mês em andamento</span>`:'');
   const H=250, {s,w}=svgIn(el,H), m={l:56,r:70,t:14,b:26}, pw=w-m.l-m.r, ph=H-m.t-m.b;
   const ymax=niceMax(Math.max(...(ant||[]).filter(v=>v!=null),...cur.filter(v=>v!=null),curPj||0)*1.05);
-  const x=k=>m.l+k*pw/11, y=v=>m.t+ph-(v/ymax)*ph;
+  const x=k=>m.l+k*pw/11, y=v=>m.t+ph-(v/ymax)*ph, sel=mp!=null?mp:mc;
   for(let k=0;k<=4;k++){ const v=ymax*k/4,yy=y(v); S('line',{x1:m.l,x2:w-m.r,y1:yy,y2:yy,style:`stroke:${k?'var(--grid)':'var(--axis)'};stroke-width:1`},s); txt(s,m.l-6,yy+4,axK(v),'tick','end'); }
   const step=Math.max(1,Math.ceil(30/(pw/11)));
-  MN.forEach((n,k)=>{ if(k%step===0||k===mi) txt(s,x(k),H-8,n,k===mi?'tick sel':'tick'); });
+  MN.forEach((n,k)=>{ if(k%step===0||k===sel) txt(s,x(k),H-8,n,k===sel?'tick sel':'tick'); });
   const linha=(v,c)=>{ let d='',pen=false; v.forEach((z,k)=>{ if(z==null){pen=false;return;} d+=(pen?'L':'M')+x(k)+','+y(z); pen=true; }); S('path',{d,style:`fill:none;stroke:${c};stroke-width:2;stroke-linejoin:round;stroke-linecap:round`},s); };
   if(ant){ linha(ant,'var(--ly)'); const ka=ant.reduce((a,z,k)=>z!=null?k:a,0); txt(s,x(ka)+6,y(ant[ka])+4,`${Y0}: ${brlK(ant[ka])}`,'lbl','start'); }
   linha(cur,'var(--brand)');
-  if(curPj){ const x0=mi?x(mi-1):x(0), y0=mi?y(cur[mi-1]):y(0); S('path',{d:`M${x0},${y0}L${x(mi)},${y(curPj)}`,style:'fill:none;stroke:var(--brand);stroke-width:2;stroke-dasharray:4 4'},s);
-    S('circle',{cx:x(mi),cy:y(curPj),r:4,style:'fill:var(--surface);stroke:var(--brand);stroke-width:2'},s); }
-  S('circle',{cx:x(mi),cy:y(cur[mi]),r:4,style:'fill:var(--brand);stroke:var(--surface);stroke-width:2'},s);
-  txt(s,x(mi)+8,y(curPj||cur[mi])-8,`${Y}: ${brlK(curPj||cur[mi])}${curPj?' (proj.)':''}`,'lbl strong','start');
+  if(curPj){ const x0=mc>=0?x(mc):x(0), y0=mc>=0?y(cur[mc]):y(0); S('path',{d:`M${x0},${y0}L${x(mp)},${y(curPj)}`,style:'fill:none;stroke:var(--brand);stroke-width:2;stroke-dasharray:4 4'},s);
+    S('circle',{cx:x(mp),cy:y(curPj),r:4,style:'fill:var(--surface);stroke:var(--brand);stroke-width:2'},s); }
+  if(mc>=0) S('circle',{cx:x(mc),cy:y(cur[mc]),r:4,style:'fill:var(--brand);stroke:var(--surface);stroke-width:2'},s);
+  const lk=curPj?mp:mc, lv=curPj||cur[mc];
+  txt(s,x(lk)+8,y(lv)-8,`${Y}: ${brlK(lv)}${curPj?' (proj.)':''}`,'lbl strong','start');
   for(let k=0;k<12;k++){ const hit=S('rect',{x:x(k)-pw/22,y:m.t,width:pw/11,height:ph,class:'hit'},s);
-    hover(hit,e=>ttShow(e,`Acumulado até ${MN[k]}`,[{n:Y,c:'var(--brand)',v:cur[k]!=null?brl(cur[k]):'—'},...(ant?[{n:Y0,c:'var(--ly)',v:ant[k]!=null?brl(ant[k]):'—'}]:[]),...(k===mi&&curPj?[{n:'Projeção',v:brl(curPj)}]:[])])); }
+    hover(hit,e=>ttShow(e,`Acumulado até ${MN[k]}`,[{n:Y,c:'var(--brand)',v:cur[k]!=null?brl(cur[k]):(k===mp&&curPj?'em andamento':'—')},...(ant?[{n:Y0,c:'var(--ly)',v:ant[k]!=null?brl(ant[k]):'—'}]:[]),...(k===mp&&curPj?[{n:'Projeção',v:brl(curPj)}]:[])])); }
 }
 function renderEmpM(){
   const E=D.emps.slice(1), cor=k=>k<3?`var(--e${k+1})`:'var(--s-other)';
@@ -964,19 +974,16 @@ function renderTop(){
   document.getElementById('tTop').innerHTML=h+'</tbody>';
   document.getElementById('bTopCsv').onclick=()=>csvGen(['Posição','Cliente','Empresa','Receita 12 meses','Compras','Última compra','Tipos'],rows.map((r,k)=>[k+1,r.c,r.e,String(r.v).replace('.',','),r.n,r.ult,r.tipos]),'maiores_clientes_'+st.emp.replace(/ /g,'_'));
 }
-function renderMrr(){
-  const b=B(); lineChart(document.getElementById('cMrr'),[{n:'Receita contratada por mês',c:'var(--brand)',v:b.mrr}],{h:200,l:56,yf:axK,tf:v=>brl(v)+' por mês'});
-}
 
 /* ---------- render ---------- */
 function render(){
   renderResumo(); renderAcum(); renderEmpM();
   renderTiles(); renderStack(); renderDiv(); renderYoy(); renderTable(); renderMatrix();
   renderPag(); renderPrazo(); renderTop();
-  renderRecTiles(); renderNovos(); renderRenov(); renderCart(); renderMrr(); renderX(); renderOpp();
+  renderRecTiles(); renderNovos(); renderRenov(); renderCart(); renderX(); renderOpp();
 }
 renderTextos(); renderIns(); renderNotes(); render();
-let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ renderAcum(); renderEmpM(); renderStack(); renderDiv(); renderYoy(); renderPrazo(); renderNovos(); renderRenov(); renderCart(); renderMrr(); },120); });
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ renderAcum(); renderEmpM(); renderStack(); renderDiv(); renderYoy(); renderPrazo(); renderNovos(); renderRenov(); renderCart(); },120); });
 }
 </script>
 </body>

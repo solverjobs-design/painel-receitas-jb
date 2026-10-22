@@ -8,11 +8,13 @@ Painel online com as receitas da aba **Lançamento de Receitas** da planilha do 
 
 ## O que o painel mostra
 
-- **Resumo executivo:** receita dos últimos 12 meses, projeção de fechamento do mês em andamento (a partir do dia 7), receita mensal contratada em planos, clientes ativos, clientes sem atendimento há mais de 90 dias, peso dos maiores clientes, receita acumulada no ano contra o ano anterior e receita por empresa.
+**Base e regra de comparação.** Todos os números são vendas da aba "Lançamento de Receitas", no mês da Data Pagamento. O painel não usa DRE nem rateio por competência, e não é o caixa da DFC (uma venda parcelada no cartão entra inteira no mês em que o cliente pagou). As comparações são sempre entre meses fechados, para que cada mês tenha um único valor em todo o painel. O mês em andamento aparece marcado com *, com o valor até o último lançamento e a projeção, sem comparação parcial.
+
+- **Resumo executivo:** receita dos 12 últimos meses fechados, projeção de fechamento do mês em andamento (a partir do dia 7), receita do último mês fechado, clientes ativos, clientes sem atendimento há mais de 90 dias, peso dos maiores clientes, receita acumulada no ano contra o ano anterior e receita por empresa.
 - **Mês selecionado:** receita, acumulado do ano, lançamentos, ticket médio e clientes, com comparação contra o mês anterior ou contra o mesmo mês do ano anterior.
 - **Por tipo:** receita mês a mês, o que mudou em cada tipo, acumulado do ano e tabela completa.
 - **Recebimento e concentração:** receita por forma de pagamento, prazo médio estimado de recebimento e os 20 maiores clientes dos últimos 12 meses.
-- **Retenção:** recompra, renovação, conversão de consultas, carteira ativa e receita contratada em planos.
+- **Retenção:** recompra, renovação, conversão de consultas e carteira ativa de planos.
 - **Venda cruzada, Tendências e Oportunidades:** textos e listas de clientes recalculados a cada atualização (com download em CSV).
 
 A identidade visual segue o site da Júlio Borba Fisioterapia. O endereço do logo fica em `config.json` (`"logo"`).
